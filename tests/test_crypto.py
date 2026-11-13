@@ -132,3 +132,12 @@ def test_c05_wrong_key_version(crypto):
         crypto.decrypt(dataclasses.replace(ev, key_version="v2"), "SV9001", "national_id")
     with pytest.raises(IntegrityFailure):
         CryptoService(KEY, "v2").decrypt(ev, "SV9001", "national_id")
+
+
+# ---------- C07: replay cùng hàng (A7) – GIỚI HẠN, test đặc tả nên xanh ngay ----------
+
+def test_c07_replay_same_row_is_still_accepted(crypto):  # A7 – GIỚI HẠN
+    old = crypto.encrypt("Địa chỉ cũ", "SV9001", "address")
+    _current = crypto.encrypt("Địa chỉ mới", "SV9001", "address")
+    # Người có quyền ghi DB chép lại (ciphertext, nonce) cũ vào đúng hàng/cột:
+    assert crypto.decrypt(old, "SV9001", "address") == "Địa chỉ cũ"
