@@ -40,7 +40,7 @@ def export_report():
             doc.add_heading(heading[2], level=level)
         else:
             doc.add_paragraph(line)
-    section.footer.paragraphs[0].text = "Database Encryption • TV2 • Bản nháp 14/11/2026"
+    section.footer.paragraphs[0].text = "Database Encryption • TV2 • Bản tích hợp 15/11/2026"
     path = DOCS / "TV2_BAO_CAO_CHUONG_3_4.docx"
     doc.save(path)
     assert len(Document(path).paragraphs) > 50
@@ -91,7 +91,7 @@ def base(prs, number, title, subtitle):
     text_box(slide, 0.55, 0.95, 12.2, 0.75, title, 34, NAVY, True)
     text_box(slide, 0.58, 1.76, 12, 0.65, subtitle, 19, GRAY)
     text_box(slide, 0.55, 6.85, 11.5, 0.34,
-             "Bản luyện tập • Crypto hiện tại là bản tạm; chưa nghiệm thu AES-GCM", 12, AMBER)
+             "Tích hợp local 15/11/2026 • AES-GCM + API + PostgreSQL • Chờ review/merge", 12, AMBER)
     text_box(slide, 12.1, 6.85, 0.65, 0.34, f"0{number}", 13, TEAL, True)
     return slide
 
@@ -116,7 +116,7 @@ def export_slides():
     slide.notes_slide.notes_text_frame.text = (
         "30 giây. Giải thích TV1 cung cấp auth/crypto; TV2 nối API và DB. "
         "Sơ đồ thể hiện luồng logic; CryptoService được gọi trong tiến trình API. "
-        "Repo hiện dùng crypto tạm; chưa khẳng định dữ liệu được bảo mật.")
+        "AES-GCM của TV1 đã tích hợp; khóa nằm ngoài bảng students.")
 
     slide = base(prs, 2, "Một đường ghi, một đường đọc", "2:30–2:50  |  Sau đó chuyển Swagger: POST → GET (đến 4:05)")
     for y, title, content in [
@@ -142,27 +142,27 @@ def export_slides():
     text_box(slide, 6.9, 3.65, 5.55, 1.45,
              "national_id · phone · address\nMỗi field: ciphertext + nonce", 24)
     text_box(slide, 0.7, 5.75, 11.95, 0.7,
-             "Hex chỉ là biểu diễn byte. Cần AES-GCM thật + kiểm thử để kết luận bảo mật.", 22, AMBER, True)
+             "Đã kiểm: tag 16 byte · nonce 12 byte · không thấy plaintext trong ciphertext.", 22, AMBER, True)
     slide.notes_slide.notes_text_frame.text = (
         "35 giây. Chạy SELECT của kịch bản Markdown để hiển thị cùng student_id. "
         "Tên/ngành rõ theo thiết kế, phone_ct là BYTEA, nonce 12 byte. "
-        "Hiện tại crypto tạm chứa plaintext: tuyệt đối không nói cột này đã bảo mật. "
-        "Chỉ dùng lời dẫn nghiệm thu sau khi có AES-GCM thật và kết quả kiểm tra đạt.")
+        "Bản tích hợp đã đạt 19 điều kiện smoke PostgreSQL và test mật mã. "
+        "Hex chỉ là biểu diễn; kết luận dựa thêm vào test và attack lab. Replay cùng ô vẫn là giới hạn.")
 
     slide = base(prs, 4, "Kết quả hiện tại và bước bàn giao", "4:40–5:00  |  Chuyển TV3 kiểm thử tấn công và khôi phục")
     block(slide, 0.6, 2.7, 5.8, 2.9)
     block(slide, 6.8, 2.7, 5.9, 2.9)
     text_box(slide, 0.85, 2.95, 5.3, 0.5, "ĐÃ KIỂM TRA", 23, TEAL, True)
     text_box(slide, 0.85, 3.65, 5.3, 1.75,
-             "Docker API / DB healthy\nCRUD + quyền + mã lỗi\nPytest: 73 passed, 3 xfailed", 22)
-    text_box(slide, 7.05, 2.95, 5.4, 0.5, "CHƯA ĐẠT", 23, AMBER, True)
+             "Pytest: 91 passed, 0 xfail\nPostgreSQL: 19/19 đạt\nAttack lab + restore: đạt", 22)
+    text_box(slide, 7.05, 2.95, 5.4, 0.5, "BÀN GIAO", 23, AMBER, True)
     text_box(slide, 7.05, 3.65, 5.4, 1.75,
-             "Crypto còn là bản tạm\nDB vẫn chứa plaintext\nChờ TV1 + nghiệm thu lại", 22)
+             "Chốt H2–H5 ở issue #3\nReview + CI + merge PR\nGhép báo cáo, luyện demo", 22)
     text_box(slide, 0.7, 5.9, 11.8, 0.6,
              "Bằng chứng: docs/tv2_verification.json  •  Không suy diễn test API thành an toàn mật mã", 18, GRAY)
     slide.notes_slide.notes_text_frame.text = (
-        "20 giây. Báo cáo đúng trạng thái. Ba xfail là test crypto tạm, không phải test đạt. "
-        "Sau khi tích hợp AES-GCM, chạy lại tests/smoke check và cập nhật slide trước buổi trình bày. "
+        "20 giây. Kết quả local ngày 15/11/2026: 91 test đạt, không xfail; PostgreSQL 19/19. "
+        "Attack lab A1=401, A2=403, A3=True, A4/A5=409, Restore=200. Chưa merge GitHub. "
         "Chuyển TV3: quyền, tamper, tráo hàng, restore. Tổng phần TV2 3 phút gồm demo Swagger/psql.")
 
     for slide in prs.slides:

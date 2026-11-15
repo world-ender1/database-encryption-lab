@@ -1,3 +1,9 @@
+# Ghi chú về bản lưu lịch sử
+
+Tài liệu bên dưới ghi nhận lần kiểm tra ngày 14/11/2026, trước khi fetch các cập nhật GitHub. Trạng thái hiện tại ngày 15/11/2026 nằm trong [TV2_MERGE_READINESS.md](TV2_MERGE_READINESS.md). AES-GCM đã merge trên main, TV3 đã có PR #5 và bản ghép local đã được chuẩn bị. Không áp dụng lại đề xuất hạ CRUD về 501 hoặc dựng lại Sprint 0 trong bản lưu này; giữ nguyên lịch sử Git và hoàn tất các điều kiện nghiệm thu còn thiếu trên bản tích hợp.
+
+---
+
 # Kiểm tra lại trình tự Sprint — TV2
 
 Ngày 14/11/2026. Đối chiếu phần 3 của `g:/transfer C D/cho downloads/Ke_hoach_thuc_hien_TV2.md` với working tree và các Git ref đang có tại máy. Chưa fetch hoặc xác minh trạng thái PR/CI hiện thời trên GitHub trong lần kiểm tra này.

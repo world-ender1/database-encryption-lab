@@ -2,11 +2,11 @@
 
 ## Trạng thái và phạm vi
 
-**Trạng thái tiến trình:** tài liệu mô tả bản CRUD đã chuẩn bị trước. Bản này chưa được bàn giao theo đúng thứ tự Sprint 0 → tuần 1 → tuần 2. Cần hoàn tất khung 501, phần TV3 và nghiệm thu trên main trước; xem [đối chiếu 23 bước](TV2_KIEM_TRA_TRINH_TU_SPRINT.md).
+**Cập nhật 15/11/2026:** nhánh `integration/tv2-merge-prep` ghép API/DB của TV2 với AES-256-GCM đã merge trên `origin/main` và nhánh `feature/security-benchmark` của TV3. Xem [kết quả rà soát và thứ tự merge](TV2_MERGE_READINESS.md). Đây là bản chuẩn bị local, chưa merge lên GitHub.
 
-Triển khai theo `Ke_hoach_thuc_hien_TV2.md` và kế hoạch nhóm **bản 3** do người dùng cung cấp. Repo có thêm tài liệu bản 4; chưa tự chuyển hợp đồng sang bản 4.
+Đối chiếu theo kế hoạch TV2 đang lưu trong `docs/ke-hoach/Ke_hoach_thuc_hien_TV2.md` và [issue H1–H5 #3](https://github.com/world-ender1/database-encryption-lab/issues/3). Giữ nguyên H1–H5; việc xác nhận hợp đồng của cả nhóm còn được theo dõi tại issue. Không cần hạ CRUD về khung 501 để dựng lại các mốc lịch sử.
 
-**Module `app/crypto_service.py` hiện là bản tạm Sprint 0, chưa mã hóa AES-GCM.** Chạy CRUD được không có nghĩa dữ liệu đã được bảo mật. Đầu ra bản tạm chứa plaintext nối với tag giả; xem hex không chứng minh đã mã hóa. Chỉ sử dụng dữ liệu giả. Khi TV1 thay bằng AES-GCM đúng H1, TV2 không cần đổi route hoặc schema.
+Module `app/crypto_service.py` dùng AES-256-GCM thật của TV1, khóa 32 byte, nonce 12 byte, tag 16 byte và AAD gắn ID/field/phiên bản khóa. Chỉ dùng dữ liệu giả; xem hex không thay cho kiểm thử mật mã.
 
 ## Chạy trên Windows PowerShell
 
@@ -30,7 +30,7 @@ Swagger: <http://127.0.0.1:8000/docs>. Nhấn **Authorize**, nhập riêng giá 
 
 `demo_client` tạo SV9001/SV9002, bỏ qua bản ghi trùng và kiểm tra GET từng bản ghi. Mã thoát khác 0 nếu tạo/đọc thất bại. `--reset` xóa **chỉ SV9001 và SV9002** trước khi tạo lại; dùng sau khi TV1 thay bản crypto tạm. Chỉ chạy reset khi hai mã này là dữ liệu demo được phép thay thế.
 
-`verify_tv2` tạo một mã ngẫu nhiên riêng, kiểm tra trực tiếp PostgreSQL và API rồi xóa hồ sơ do nó tạo; không thay dữ liệu H5. Kết quả ghi `docs/tv2_verification.json`, không ghi key/token/URL kết nối. Exit 0 = kiểm tra đạt, 1 = lỗi vận hành/API, 2 = các kiểm tra vận hành đạt nhưng phát hiện plaintext trong cột nhạy cảm. Exit 2 là kết quả dự kiến với bản crypto tạm. Script không thay thế attack lab của TV3 và không phải chứng minh an toàn mật mã.
+`verify_tv2` tạo một mã ngẫu nhiên riêng, kiểm tra trực tiếp PostgreSQL và API rồi xóa hồ sơ do nó tạo; không thay dữ liệu H5. Kết quả ghi `docs/tv2_verification.json`, không ghi key/token/URL kết nối. Exit 0 = kiểm tra đạt, 1 = lỗi vận hành/API hoặc nhiều điều kiện sai, 2 = chỉ điều kiện không chứa plaintext thất bại. Script kiểm cả độ dài tag, nonce và phiên bản khóa nhưng không thay thế attack lab của TV3 hoặc đánh giá an toàn mật mã.
 
 ## Cấu hình H4
 
@@ -142,7 +142,7 @@ docker compose exec -T db psql -U demo -d encryption_demo -c "SELECT student_id,
 .\.venv\Scripts\python.exe -m scripts.verify_tv2
 ```
 
-Fixture SQLite chỉ kiểm tra API/ORM nhanh; không chứng minh hành vi PostgreSQL. Fixture ép cấu hình test trước khi import app, dùng StaticPool và override đúng `app.database.get_db`; không đọc/ghi DB thật. Test API bao gồm hợp đồng phân quyền/error response; TV3 vẫn phụ trách bộ tấn công đầy đủ.
+Fixture SQLite của TV3 chỉ kiểm tra API/ORM nhanh; không chứng minh hành vi PostgreSQL. Fixture ép cấu hình test trước khi import app, dùng StaticPool và override đúng `app.database.get_db`; không đọc/ghi DB thật. Test API kiểm CRUD, validation, lỗi giao dịch, mapping đầu ra H1 vào H3 và hợp đồng 409 khi danh sách có nhiều hồ sơ hỏng. Kiểm tra quyền từng route và nonce mới nằm trong `tests/test_security.py` do TV3 phụ trách.
 
 Compose chờ DB healthcheck đạt trước khi tạo API qua `service_healthy`, rồi healthcheck API gọi `/health` ([Docker — Startup order](https://docs.docker.com/compose/how-tos/startup-order/)). API khỏe không có nghĩa crypto thật đã sẵn sàng.
 
@@ -158,4 +158,4 @@ Compose chờ DB healthcheck đạt trước khi tạo API qua `service_healthy`
 
 ## Bàn giao
 
-`requirements.txt` và `tests/conftest.py` là phần hỗ trợ được bổ sung vì repo thiếu, cần TV3 nhận quản lý; chưa sửa các file TV1 đang có. Xem [danh sách việc còn lại](TV2_CONG_VIEC_CON_LAI.md), [bản nháp Chương 3–4](TV2_BAO_CAO_CHUONG_3_4.md) và [kịch bản 3 phút](TV2_SLIDE_VA_DEMO.md).
+Đã chọn nguyên bản `requirements.txt` và `tests/conftest.py` từ nhánh TV3 để giải quyết xung đột; TV3 tiếp tục sở hữu hai file. Không sửa module TV1 ngoài việc lấy các commit đã merge vào main. Xem [danh sách việc còn lại](TV2_CONG_VIEC_CON_LAI.md), [Chương 3–4](TV2_BAO_CAO_CHUONG_3_4.md) và [kịch bản 3 phút](TV2_SLIDE_VA_DEMO.md).

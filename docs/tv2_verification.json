@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-11-13T18:31:02.730709+00:00",
+  "checked_at_utc": "2026-11-15T15:50:38.369619+00:00",
   "checks": {
     "schema_h3_bytea": true,
     "health_200": true,
@@ -11,7 +11,9 @@
     "read_roundtrip": true,
     "viewer_write_403": true,
     "put_id_422": true,
-    "plaintext_absent_in_sensitive_columns": false,
+    "plaintext_absent_in_sensitive_columns": true,
+    "ciphertext_includes_16_byte_tag": true,
+    "stored_key_version": true,
     "nonce_lengths_12": true,
     "put_200": true,
     "put_roundtrip": true,
@@ -20,6 +22,6 @@
     "deleted_get_404": true
   },
   "postgresql_version": "17.12 (Debian 17.12-1.pgdg13+1)",
-  "result": "blocked_by_plaintext",
+  "result": "pass",
   "note": "A passing smoke check is not an AES-GCM security audit. Run TV1/TV3 suites too."
 }

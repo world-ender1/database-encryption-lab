@@ -1,8 +1,8 @@
 # Bản nháp báo cáo — Phần thành viên 2
 
-Ngày cập nhật: 14/11/2026. Người thực hiện: [điền họ tên, MSSV].
+Ngày cập nhật: 15/11/2026. Người thực hiện: [điền họ tên, MSSV].
 
-Tài liệu này mô tả thiết kế mục tiêu và phần TV2 đã triển khai. Module mật mã hiện vẫn là bản tạm Sprint 0; các khẳng định về tính bí mật của AES-GCM là yêu cầu thiết kế, chưa phải kết luận nghiệm thu hệ thống hiện tại. TV1 cần bổ sung phần mô tả module mật mã và xác thực trước khi ghép báo cáo cuối cùng.
+Tài liệu mô tả bản tích hợp local `integration/tv2-merge-prep`: API/DB của TV2, AES-256-GCM của TV1 đã merge vào main và phần kiểm thử của TV3. Phần 4.5 được đối chiếu với mã TV1 và tài liệu `docs/crypto_design.md`; phần 4.6 ghi kết quả chạy thực tế. Nhóm cần review và ghép báo cáo cuối; chưa coi các kiểm tra local là PR đã được duyệt hoặc bản phát hành.
 
 ## Chương 3. Phân tích và thiết kế hệ thống
 
@@ -64,7 +64,7 @@ Hệ thống chỉ nạp một khóa hoạt động, chưa có keyring hay rotat
 
 Môi trường kiểm thử phần TV2 sử dụng Python 3.12, FastAPI 0.118.0, SQLAlchemy 2.0.49, psycopg 3.2.6, Pydantic Settings 2.10.1 và pytest 8.4.2. Dockerfile dùng python:3.12-slim; Compose dùng postgres:17. Phiên bản PostgreSQL thực tế được ghi trong docs/tv2_verification.json để tránh suy diễn từ tag image.
 
-Các file chính gồm config.py, database.py, models.py, schemas.py, dependencies.py, student_service.py, main.py và init_db.py. scripts/demo_client.py chuẩn bị dữ liệu H5; tests/test_api.py kiểm tra hợp đồng API. requirements.txt và tests/conftest.py được bổ sung làm phần hỗ trợ ban đầu vì repo chưa có; cần bàn giao TV3 quản lý.
+Các file chính gồm config.py, database.py, models.py, schemas.py, dependencies.py, student_service.py, main.py và init_db.py. scripts/demo_client.py chuẩn bị dữ liệu H5; tests/test_api.py kiểm tra hợp đồng API. requirements.txt và tests/conftest.py dùng nguyên bản TV3 tại commit 3edd89b; TV3 tiếp tục quản lý dependencies và fixture chung.
 
 ### 4.2. Cấu hình và kết nối DB
 
@@ -86,27 +86,31 @@ Dockerfile cài dependencies rồi chép thư mục app. Khi khởi động, ti�
 
 Volume pgdata lưu dữ liệu PostgreSQL qua các lần dừng/tạo lại container. Lệnh docker compose down giữ volume; việc xóa volume không phải bước kiểm thử thường lệ. Mật khẩu trong .env phải phù hợp với volume đã khởi tạo. Khóa không được chép vào image; .dockerignore loại .env và Dockerfile chỉ chép app cùng manifest dependencies.
 
-### 4.5. Module mật mã và xác thực — phần chờ TV1 bổ sung
+### 4.5. Module mật mã và xác thực — tích hợp phần TV1
 
-Hợp đồng mục tiêu sử dụng AES-256-GCM: khóa 32 byte, nonce 12 byte, ciphertext kèm tag 16 byte, AAD theo định dạng student:<id>|field:<field>|key:<version>. Tài liệu cryptography mô tả AESGCM giải mã thất bại khi ciphertext, key, nonce hoặc associated data sai; nonce không được tái sử dụng với cùng khóa [4].
+Module sử dụng AES-256-GCM: khóa 32 byte, nonce 12 byte, ciphertext kèm tag 16 byte, AAD theo định dạng student:<id>|field:<field>|key:<version>. Tài liệu cryptography mô tả AESGCM giải mã thất bại khi ciphertext, key, nonce hoặc associated data sai; nonce không được tái sử dụng với cùng khóa [4].
 
-Mã hiện tại của TV1 vẫn là bản tạm Sprint 0 dùng plaintext và tag SHA-256 giả, không dùng khóa để cung cấp tính bí mật. Vì vậy cần TV1 thay thân encrypt/decrypt, chuẩn hóa lỗi thành IntegrityFailure và hoàn thiện test C01–C07. Phần báo cáo cuối cần TV1 bổ sung quyết định quản lý nonce, xử lý InvalidTag, metadata phiên bản khóa và giới hạn replay.
+PR #2 của TV1 đã thay bản tạm bằng AESGCM; PR #4 bổ sung tài liệu thiết kế và test replay. encrypt sinh nonce bằng os.urandom(12), mã hóa UTF-8 với AAD và trả EncryptedValue. decrypt kiểm key_version, độ dài nonce, dựng lại AAD và chuyển InvalidTag thành IntegrityFailure để API trả 409. TV2 giữ nguyên interface và không sửa thuật toán của TV1.
 
-Xác thực hiện có hai token tĩnh, HTTPBearer(auto_error=False) và so sánh bằng secrets.compare_digest. TV1 cần rà soát và ký nhận mô tả xác thực trước khi ghép chương này. Đây là mô tả mã đang có, không phải xác nhận module mật mã đã hoàn tất.
+AAD ràng buộc ciphertext với hàng, cột và phiên bản khóa; không chặn được việc chép lại ciphertext cũ của cùng ô. Test C07 ghi nhận giới hạn replay này. Nonce là ngẫu nhiên chứ không phải bộ đếm đảm bảo duy nhất; demo chưa có cơ chế đếm lần mã hóa hoặc xoay khóa. Chi tiết quản lý khóa và giới hạn được TV1 trình bày trong docs/crypto_design.md.
+
+Xác thực dùng hai token tĩnh, HTTPBearer(auto_error=False) và secrets.compare_digest trên bytes. Token viewer được đọc nhưng không ghi; thiếu hoặc sai token trả 401. Khóa/token nằm trong .env, không nằm trong bảng students; lộ khóa, máy ứng dụng bị chiếm và replay cùng hàng nằm ngoài phạm vi bảo vệ. TV1 review nội dung này khi ghép báo cáo chung.
 
 ### 4.6. Kiểm thử và bằng chứng hiện có
 
-Lần chạy ngày 14/11/2026: toàn bộ suite có 73 passed và 3 xfailed. Ba xfail thuộc bộ test crypto đã tồn tại: vector AES-GCM, che giấu plaintext và từ chối khóa sai. Không được ghi kết quả này là “mọi kiểm thử mật mã đạt”.
+Lần chạy tích hợp ngày 15/11/2026: 91 passed, không xfail/skip. Toàn bộ test chờ API của TV3 đã bỏ marker sau khi chạy kiểm chứng bằng --runxfail. Kết quả cũ 73 passed / 3 xfailed của bản crypto tạm không còn mô tả bản hiện tại. Đây là kết quả local; CI của PR tích hợp phải chạy riêng trên commit sẽ merge.
 
-Bộ test API kiểm tra CRUD, bản ghi trùng, ID/độ dài dữ liệu sai, cập nhật có nonce mới, JSON lỗi ổn định, phân quyền từng route và lỗi danh sách khi có nhiều hồ sơ hỏng. Fixture SQLite cô lập DB của từng test và override get_db. Kết quả này cần được phân biệt với kiểm thử end-to-end trên PostgreSQL.
+Bộ test API kiểm CRUD, bản ghi trùng, ID/độ dài dữ liệu sai, JSON lỗi, lỗi danh sách nhiều hồ sơ hỏng và lưu đúng đầu ra H1 cho cả POST/PUT. Test quyền từng route và nonce mới đặt trong test_security của TV3. Fixture SQLite cô lập DB từng test và override get_db. Kết quả này được phân biệt với kiểm thử end-to-end trên PostgreSQL.
 
-scripts/verify_tv2.py kiểm tra API đang chạy cùng dữ liệu đọc trực tiếp từ PostgreSQL, ghi kết quả không chứa bí mật vào docs/tv2_verification.json. Kiểm tra plaintext là điều kiện bắt buộc trước nghiệm thu; kết quả false với bản crypto tạm phải được giữ nguyên trong báo cáo. Sau khi TV1 bàn giao AES-GCM, cần chạy lại script, test crypto và attack lab của TV3.
+Docker được build từ nguồn tích hợp, dùng cấu hình/khóa, cổng và volume thử nghiệm riêng. scripts/verify_tv2.py đạt 19/19 điều kiện, exit 0: schema BYTEA, CRUD/quyền/mã lỗi, không thấy plaintext trong ciphertext, tag 16 byte, nonce 12 byte, key_version và nonce mới sau PUT. File docs/tv2_verification.json ghi phiên bản PostgreSQL thực tế và thời điểm UTC. Smoke check chỉ kiểm các điều kiện đó, không phải chứng minh an toàn mật mã tổng quát.
+
+Attack lab của TV3 đạt A1=401, A2=403, A3=True, A4=409, A5=409 và Restore=200. Benchmark chạy đủ 100/1.000/10.000 bản ghi, lưu CSV và log trong docs/evidence. Số đo chỉ phục vụ kiểm tích hợp trên máy hiện tại; TV3 phụ trách biểu đồ, cấu hình máy và thảo luận nhiễu đo ở Chương 5. Không dùng lần chạy này để kết luận hệ thống production đã được kiểm toán.
 
 ### 4.7. Quy trình Git và bàn giao
 
-Phần TV2 được chuẩn bị trên nhánh feature/api-db. Các giao diện H1–H5 lấy từ hai tài liệu người dùng cung cấp; không sửa file nguồn TV1. Chưa có bằng chứng PR đã được review hoặc merge. Nội dung PR dự thảo và checklist việc còn lại nằm trong docs/TV2_PR_DRAFT.md và docs/TV2_CONG_VIEC_CON_LAI.md.
+Nhánh integration/tv2-merge-prep được tạo từ feature/api-db tại 0017e18, ghép origin/main tại 692337a và feature/security-benchmark tại 3edd89b. Hai xung đột dependencies/fixture được giải quyết bằng bản TV3. Nhánh nguồn của bạn và các nhánh GitHub được giữ nguyên trong lần chuẩn bị này. Nội dung PR và thứ tự merge nằm trong docs/TV2_PR_DRAFT.md và docs/TV2_MERGE_READINESS.md.
 
-Trước bàn giao cuối, nhóm cần thống nhất phiên bản hợp đồng vì repo có tài liệu v4 trong khi yêu cầu hiện tại chỉ định v3. TV3 tiếp nhận dependency/fixture hỗ trợ, chạy CI và attack lab. TV1 ghép Chương 3–4 với báo cáo chung. Thành viên 2 luyện phần demo 3 phút bằng Swagger và truy vấn PostgreSQL, rồi tổng duyệt cùng nhóm 12 phút.
+Issue #3 đã ghi nhận TV2 đồng ý H1 nhưng H2–H5 chưa đầy đủ; TV2 có bản nội dung chuẩn bị để nhóm xác nhận. PR #5 của TV3 đang mở, CI success nhưng chưa có review tại thời điểm kiểm tra. Cần review, CI trên commit tích hợp và merge trên GitHub trước khi gọi là hoàn tất bàn giao. TV1 ghép báo cáo, TV3 hoàn thiện Chương 5/release; TV2 điền thông tin cá nhân, luyện demo 3 phút và tổng duyệt cùng nhóm 12 phút.
 
 ## Tài liệu tham khảo
 

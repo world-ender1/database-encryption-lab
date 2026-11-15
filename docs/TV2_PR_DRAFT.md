@@ -1,33 +1,43 @@
-# feat(api): persist student fields through CryptoService and expose protected CRUD
+# feat(api): complete encrypted student CRUD and integrated verification
 
-> Bản dự thảo cho **bước 18**, chưa dùng làm PR Sprint 0. Kiểm tra lại phần 3 cho thấy main chưa có đủ khung TV2/TV3; phải hoàn tất bước 1–9 trước. Xem [audit Sprint](TV2_KIEM_TRA_TRINH_TU_SPRINT.md). Các file hỗ trợ TV3 và test quyền/tamper cần tách bàn giao trước khi chốt phạm vi PR này.
-
-Repo đã có H1/auth của TV1 nhưng chưa có phần API và DB. Thay đổi bổ sung cấu hình H4, schema students H3, mapping thông qua CryptoService, các route H2, khởi tạo DB và Docker Compose. POST/GET/PUT/DELETE hoạt động với lỗi 404/409/422 ổn định; mọi route sinh viên gắn dependency quyền tương ứng.
+Main đã có AES-GCM của TV1 nhưng chưa có API/DB. Thay đổi bổ sung FastAPI CRUD, PostgreSQL schema, Docker và dữ liệu demo; ba trường nhạy cảm được mã hóa trước lưu, giải mã khi đọc có quyền, dữ liệu hỏng trả 409 integrity_failure. Bản tích hợp đồng thời bật kiểm thử bảo mật bắt buộc sau khi API đã sẵn sàng.
 
 ## Phạm vi
 
-- Các file sở hữu TV2 trong app, Dockerfile, compose.yaml, demo_client, test_api và api_db.md.
-- `.dockerignore`, script smoke check PostgreSQL, tài liệu báo cáo/slide và bàn giao TV2.
-- Phần hỗ trợ cần TV3 review/nhận quản lý: requirements.txt và tests/conftest.py do repo chưa có. Công cụ xuất Word/PPTX có dependencies riêng trong docs/requirements-export.txt.
-- Không thay module crypto, key_manager, auth, init_env và các test sẵn có của TV1.
+- TV2: config, database/model, schemas, dependency H1, student service, routes, init_db, Docker/Compose, demo_client và test_api.
+- Test hợp đồng lưu trữ kiểm POST/PUT lưu đúng đầu ra CryptoService; smoke PostgreSQL kiểm thêm tag và key_version.
+- Dependencies và fixture lấy nguyên bản TV3 để giải quyết add/add. Bỏ WAIT_API sau tích hợp; chuyển test quyền từng route sang test_security, bỏ test nonce trùng. Phần này cần TV3 review.
+- Cập nhật api_db, Chương 3–4 (Markdown/Word), slide/PPTX, nội dung hợp đồng và bằng chứng.
+- Module crypto/auth của TV1 giữ nguyên theo main đã merge.
 
 ## Kiểm tra
+
+Ngày 15/11/2026 trên bản ghép local:
+
+- Windows Python 3.12.1: 91 passed, không xfail/skip.
+- Linux image Python 3.12.16 cài dependencies mới: 91 passed; pip check đạt. Có một DeprecationWarning Starlette/AnyIO ở mỗi môi trường.
+- Docker build/up --wait: DB/API healthy. Demo SV9001/SV9002 tạo 201, đọc 200.
+- verify_tv2: 19/19 đạt, exit 0 trên PostgreSQL 17.12.
+- Attack lab: A1=401, A2=403, A3=True, A4=409, A5=409, Restore=200.
+- Benchmark: đủ 100/1.000/10.000 bản ghi; CSV/log trong docs/evidence.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
 docker compose up -d --build --wait
 .\.venv\Scripts\python.exe -m scripts.demo_client
 .\.venv\Scripts\python.exe -m scripts.verify_tv2
+.\.venv\Scripts\python.exe -m scripts.attack_lab
 ```
 
-Kết quả ngày 14/11/2026: 73 passed, 3 xfailed (crypto tạm của TV1); Docker api/db healthy; demo_client tạo và đọc hai hồ sơ. Smoke PostgreSQL: 16 điều kiện đạt, điều kiện không chứa plaintext **không đạt**, report `blocked_by_plaintext`, exit 2. Xem docs/tv2_verification.json.
+Lần nghiệm thu dùng cấu hình/cổng/volume mới trong bản sao tạm; không chạm dữ liệu cũ. File docs/tv2_verification.json và docs/evidence lưu kết quả không có bí mật. Kết quả local không thay CI trên commit của PR này.
 
-## Giới hạn cần reviewer biết
+## Reviewer và điều kiện merge
 
-CryptoService hiện vẫn là bản tạm Sprint 0. PR này hoàn thiện tích hợp TV2, **chưa phải bản phát hành có bảo mật AES-GCM**. Sau khi TV1 thay bản thật, cần reset dữ liệu demo từ bản tạm, chạy lại crypto suite và smoke check. Chưa có attack_lab/CI của TV3 để xác nhận nghiệm thu toàn nhóm.
+TV1 review mapping H1, auth và mô tả mật mã; TV3 review dependencies/fixture, test_security và H2/H3. Hoàn tất nội dung H2–H5 ở issue #3 theo docs/TV2_HOP_DONG_ISSUE_3.md.
 
-`.env` đã được kiểm tra Git bỏ qua; tài liệu và minh chứng không chứa key/token. Cổng chỉ bind loopback, build context loại `.env`.
+Đề xuất merge PR #5 đã review trước, cập nhật nhánh integration/tv2-merge-prep theo main rồi dùng PR này. Khi đó source TV3 đã nằm trong base và diff tập trung vào API/DB cùng thay đổi test tích hợp. Giữ lịch sử commit, không force-push. Xem docs/TV2_MERGE_READINESS.md.
 
-## Người review dự kiến
+Replay cùng ô, lộ khóa/máy ứng dụng và metadata để rõ là giới hạn thiết kế. Chương 5/biểu đồ benchmark, nghiệm thu máy sạch, tên/MSSV, ghép báo cáo và tổng duyệt vẫn là việc bàn giao của nhóm.
 
-TV1: H1/auth và mapping mã hóa. TV3: H2/H3/H4, fixtures/dependencies và tích hợp kiểm thử. Chưa gán reviewer hoặc gửi PR thực tế.
+---
+Bản mô tả local; chưa tạo PR, gán reviewer hoặc đăng approval. Cập nhật kết quả CI và commit thực tế trước merge.

@@ -1,6 +1,6 @@
 # Slide và lời dẫn TV2 — 3 phút (mốc 2:00–5:00 của nhóm)
 
-**Trạng thái:** dùng để chuẩn bị/luyện tập. Chỉ demo kết luận bảo mật sau khi TV1 thay crypto tạm bằng AES-GCM thật và các kiểm tra bắt buộc đạt.
+**Trạng thái 15/11/2026:** AES-GCM thật đã tích hợp local; 91 test đạt, PostgreSQL 19/19 và attack lab đạt. Dùng bản đã nghiệm thu để luyện; trước trình bày phải khởi động lại stack trên máy demo. Xem TV2_MERGE_READINESS.md; còn review/merge GitHub.
 
 ## Slide 1 — Kiến trúc hệ thống (2:00–2:30)
 
@@ -50,23 +50,21 @@ docker compose exec -T db psql -U demo -d encryption_demo -c "SELECT student_id,
 - Hex chỉ là biểu diễn: bằng chứng mật mã cần AES-GCM thật và kiểm thử.
 - Đối chiếu mã sinh viên với hồ sơ vừa tạo trên Swagger.
 
-Lời dẫn chỉ dùng **sau nghiệm thu AES-GCM**: “Đây là cùng hồ sơ vừa xem qua API. Tên và ngành được để rõ theo thiết kế, còn điện thoại được lưu dưới dạng ciphertext. PostgreSQL không giữ khóa trong bảng này. Kết quả không chỉ dựa vào việc nhìn thấy hex mà còn được kiểm tra bằng bộ test mật mã và thử nghiệm của nhóm.”
-
-Khi luyện với bản tạm, phải nói thay bằng: “Đây mới là định dạng lưu trữ của luồng tích hợp; bản crypto tạm vẫn chứa plaintext nên chưa dùng để kết luận bảo mật.”
+Lời dẫn: “Đây là cùng hồ sơ vừa xem qua API. Tên và ngành được để rõ theo thiết kế, còn điện thoại được lưu dưới dạng ciphertext. PostgreSQL không giữ khóa trong bảng này. Kết quả không chỉ dựa vào việc nhìn thấy hex mà còn được kiểm tra bằng bộ test mật mã và thử nghiệm của nhóm.”
 
 ## Slide 4 — Kết quả và chuyển phần (4:40–5:00)
 
 - CRUD và Docker đã có kiểm thử độc lập với thuật toán mã hóa.
-- Hiện còn chờ AES-GCM thật; không dùng 73 passed / 3 xfailed làm bằng chứng an toàn.
+- Kết quả tích hợp: 91 passed, không xfail; PostgreSQL 19/19; attack lab khôi phục được dữ liệu.
 - Chuyển TV3: thử 401/403, sửa dữ liệu, tráo hàng và khôi phục.
 
 Lời dẫn: “Phần API và database cung cấp đường ghi/đọc cùng các mã lỗi ổn định. Tiếp theo, thành viên 3 sẽ kiểm tra hệ thống phản ứng ra sao khi truy cập sai quyền hoặc dữ liệu bị thay đổi.”
 
 ## Checklist chuẩn bị và tổng duyệt
 
-- [ ] TV1 đã merge AES-GCM và gỡ các xfail tương ứng, smoke check không phát hiện plaintext.
+- [x] TV1 đã merge AES-GCM; bản tích hợp bỏ xfail, smoke check không phát hiện plaintext.
 - [ ] Docker DB/API healthy, `/docs` mở được, SV9001/SV9002 đã sẵn sàng cho TV3.
-- [ ] Đã reset dữ liệu từ crypto tạm ở phạm vi demo được phép thay thế.
+- [ ] Nếu dùng volume cũ có crypto tạm, xử lý riêng dữ liệu demo được phép thay; lần nghiệm thu dùng volume thử riêng.
 - [ ] Chọn ID demo chưa dùng, chuẩn bị JSON và câu SELECT trên.
 - [ ] Authorize trước khi trình chiếu; tắt thông báo, tăng cỡ chữ terminal.
 - [ ] Chụp ảnh dự phòng từ lần chạy thật, không lấy kết quả kỳ vọng làm kết quả đo.

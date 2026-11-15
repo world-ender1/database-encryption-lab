@@ -1,28 +1,31 @@
-# Ghi chú review tích hợp của TV2
+# Ghi chú review TV1/TV3 từ TV2
 
-Ngày 14/11/2026. Đây là nhận xét từ source local, **chưa phải review hoặc approve PR trên GitHub**.
+Ngày 15/11/2026. Kết quả đọc source và chạy test local; chưa đăng review/approve lên GitHub.
 
-## H1 của TV1
+## TV1 — PR #2/#4 đã merge
 
-Đã thấy đúng tên/chữ ký decode_key, CryptoService(key, key_version), encrypt(value, student_id, field), decrypt(ev, student_id, field), EncryptedValue(ciphertext, nonce, key_version), IntegrityFailure, require_admin và require_reader. TV2 đã gọi các interface này thay vì sao chép crypto/auth vào route.
+- CryptoService, EncryptedValue, decode_key và auth giữ H1; TV2 truyền đúng ID, field và key_version.
+- AES-GCM dùng khóa 32 byte, nonce 12 byte, AAD đã chốt. Có known vector, wrong key, nonce/tag/ciphertext/AAD và replay cùng ô.
+- Replay là giới hạn đã biết. Tài liệu TV2 đã đối chiếu docs/crypto_design.md.
+- Không sửa thân module TV1. 47 test TV1 nằm trong bộ tích hợp.
 
-**Chưa đủ điều kiện nghiệm thu crypto:**
+## TV3 — PR #5
 
-1. `crypto_service.py` ghi rõ bản tạm; encrypt trả UTF-8 plaintext nối tag SHA-256 giả. Hàm khởi tạo chỉ kiểm tra chiều dài key, không sử dụng key để bảo vệ nội dung. Kiểm tra PostgreSQL xác nhận plaintext còn nằm trong cột nhạy cảm.
-2. Ba test `test_h1_known_vector_matches_aad_contract`, `test_c02_ciphertext_hides_plaintext`, `test_c03_wrong_key` còn xfail. Khi triển khai AES-GCM, TV1 phải gỡ marker phù hợp; strict=True khiến XPASS bị xem là lỗi nên không chỉ thay thân hàm rồi bỏ qua test.
-3. Bản tạm có thể để `UnicodeDecodeError` thoát ra nếu có dữ liệu UTF-8 sai nhưng tag giả được tính lại đúng. Không coi đây là triển khai đủ hợp đồng “mọi lỗi giải mã thành IntegrityFailure”. TV1 cần chuẩn hóa lỗi dữ liệu/tag/nonce/version khi viết bản thật.
-4. Chưa thấy test C07 replay trong file hiện tại. Cần bổ sung và giải thích rằng replay cùng hàng/field có thể vẫn xác thực được.
+Nguồn: [PR #5](https://github.com/world-ender1/database-encryption-lab/pull/5), commit `3edd89bcbaba3b6adf93374b77cd30a0c0854030`.
 
-Khi review PR thật: kiểm tra nonce mới 12 byte, key 32 byte, tag 16 byte, AAD đúng tuyệt đối, không log key, sai key/AAD/nonce/CT/version đều từ chối, không lộ plaintext trong CT, không đổi chữ ký H1.
+- Tên bảng/cột, route/mã lỗi phù hợp H2/H3. Fixture import app khi chạy và override get_db bằng SQLite riêng.
+- attack_lab dùng try/finally để khôi phục dữ liệu. Benchmark có warmup và ba lần đo lấy trung vị; payload_bytes là dữ liệu ba field, không phải dung lượng bảng trên đĩa.
+- CI của TV3 là success nhưng 14 test gắn WAIT_API/xfail không strict. Trước tích hợp lỗi thiếu API bị xfail; sau tích hợp XPASS vẫn xanh. Bản chuẩn bị đã bỏ marker và chạy pytest bình thường: 91 passed.
+- Hai xung đột add/add là requirements.txt và tests/conftest.py; đã chọn nguyên bản TV3, có python-dotenv trực tiếp.
+- Chuyển sáu ca kiểm quyền từng route từ test_api sang test_security. Bỏ một test nonce trùng TV3; thêm một test mapping H1/H3 TV2 cho POST/PUT. Tổng số test vẫn là 91.
+- Test danh sách nhiều hồ sơ hỏng và DELETE hồ sơ hỏng giữ ở TV2 để kiểm H2; TV3 kiểm các cơ chế tamper/swap/AAD.
+- PostgreSQL smoke: 19/19. Attack lab: A1=401, A2=403, A3=True, A4=409, A5=409, Restore=200.
 
-## H2/H3 cho TV3
+## Điều kiện trước duyệt merge
 
-- `get_db` phải được override từ `app.database`, cùng đối tượng dependency route đang dùng.
-- Bảng `students`, cột `*_ct`, `*_nonce`, `key_version` giữ nguyên. Bảng benchmark phải tách riêng.
-- Thiếu/sai token 401, viewer ghi 403, ID sai 422.
-- Dữ liệu hỏng trả 409 `integrity_failure`; GET danh sách trả cả nhóm ID hỏng, không trả danh sách một phần.
-- POST trùng trả 409 `duplicate_student`; không nhầm với lỗi mật mã.
-- PUT không nhận student_id trong body, mã hóa lại cả 3 field. DELETE có thể dọn hồ sơ hỏng.
-- Attack lab phải giữ dữ liệu gốc và restore trong finally; sau restore GET trả 200.
+1. TV3 review phần bỏ WAIT_API và test quyền chuyển sang; TV1 review mapping H1/mô tả mật mã.
+2. Hoàn tất H2–H5 tại issue #3; có bản nháp TV2_HOP_DONG_ISSUE_3.md.
+3. CI chạy lại trên commit sẽ merge. PR #5 có mergeable=true, mergeable_state=blocked và chưa có review. Endpoint branch protection trả 404 nên chưa xác nhận được quy tắc bảo vệ; xem yêu cầu trên giao diện GitHub.
+4. Chưa thấy Chương 5, biểu đồ benchmark hoặc bằng chứng nghiệm thu máy sạch trong tree TV3. Đây là việc hoàn thiện đồ án, không phải lỗi CRUD.
 
-`tests/conftest.py` và `requirements.txt` được tạo hỗ trợ TV2 vì repo chưa có. TV3 cần tiếp nhận, thêm CI và dependencies của benchmark; không có thay đổi vào file TV3 đã tồn tại.
+Chi tiết bằng chứng và giới hạn kiểm tra: TV2_MERGE_READINESS.md, docs/evidence.
