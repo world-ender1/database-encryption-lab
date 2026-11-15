@@ -9,11 +9,6 @@ from app.crypto_service import CryptoService, EncryptedValue, IntegrityFailure
 KEY = bytes(range(32))
 OTHER_KEY = bytes(32)
 
-# Bản tạm Sprint 0 chưa mã hóa thật nên 3 test đánh dấu dưới đây chưa thể đạt.
-# strict=True: nếu test bỗng đạt thì pytest báo lỗi, buộc phải gỡ marker.
-# Gỡ marker ở W1-09 – đó là bước "đỏ" trước khi viết AES-GCM.
-needs_real_crypto = pytest.mark.xfail(strict=True, reason="Bản tạm Sprint 0 chưa mã hóa thật – gỡ ở W1-09")
-
 
 @pytest.fixture
 def crypto():
@@ -52,7 +47,6 @@ def test_h1_key_must_be_32_bytes(size):
         CryptoService(bytes(size))
 
 
-@needs_real_crypto
 def test_h1_known_vector_matches_aad_contract(crypto):
     # AES-256-GCM, key = bytes(range(32)), nonce = bytes(range(12)),
     # AAD = b"student:SV9001|field:address|key:v1", plaintext = "Ha Noi".
@@ -84,7 +78,6 @@ def test_c02_nonce_and_ciphertext_differ(crypto):
     assert a.ciphertext != b.ciphertext
 
 
-@needs_real_crypto
 def test_c02_ciphertext_hides_plaintext(crypto):
     ev = crypto.encrypt("012345678901", "SV9001", "national_id")
     assert b"012345678901" not in ev.ciphertext
@@ -92,7 +85,6 @@ def test_c02_ciphertext_hides_plaintext(crypto):
 
 # ---------- C03: sai key ----------
 
-@needs_real_crypto
 def test_c03_wrong_key(crypto):  # A6
     ev = crypto.encrypt("012345678901", "SV9001", "national_id")
     with pytest.raises(IntegrityFailure):
@@ -140,3 +132,12 @@ def test_c05_wrong_key_version(crypto):
         crypto.decrypt(dataclasses.replace(ev, key_version="v2"), "SV9001", "national_id")
     with pytest.raises(IntegrityFailure):
         CryptoService(KEY, "v2").decrypt(ev, "SV9001", "national_id")
+
+
+# ---------- C07: replay cùng hàng (A7) – GIỚI HẠN, test đặc tả nên xanh ngay ----------
+
+def test_c07_replay_same_row_is_still_accepted(crypto):  # A7 – GIỚI HẠN
+    old = crypto.encrypt("Địa chỉ cũ", "SV9001", "address")
+    _current = crypto.encrypt("Địa chỉ mới", "SV9001", "address")
+    # Người có quyền ghi DB chép lại (ciphertext, nonce) cũ vào đúng hàng/cột:
+    assert crypto.decrypt(old, "SV9001", "address") == "Địa chỉ cũ"
