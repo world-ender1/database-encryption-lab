@@ -4,6 +4,8 @@ Ngày kiểm tra: 15/11/2026 (Asia/Saigon). Repo: [world-ender1/database-encrypt
 
 **Kết luận:** code ba thành viên đã đủ để chạy tích hợp và đã vượt qua các kiểm tra bên dưới. Phần kỹ thuật TV2 đã chuẩn bị trên nhánh local `integration/tv2-merge-prep`. Toàn bộ đồ án chưa thể đánh dấu hoàn tất: còn xác nhận hợp đồng, review/merge/CI trên GitHub, báo cáo chung và tổng duyệt.
 
+**Bổ sung sau đối chiếu đầy đủ kế hoạch:** xem [DOI_CHIEU_KE_HOACH_CA_NHOM.md](DOI_CHIEU_KE_HOACH_CA_NHOM.md). Hành vi A1–A8 đạt phạm vi kế hoạch, nhưng cần siết điều kiện kết luận A2/A4/A5/restore của attack lab, xử lý phân công test tamper và chốt cách lưu CSV. GitHub xác nhận TV2 đã approve PR #2/#4; main có bảo vệ nhưng thông tin required status checks đang off/rỗng. Bản ghép local chưa phải sản phẩm đã hoàn tất mọi điều kiện bàn giao.
+
 ## Các nhánh GitHub đã kiểm tra
 
 | Nhánh | Commit | Kết quả |
@@ -16,6 +18,8 @@ Ngày kiểm tra: 15/11/2026 (Asia/Saigon). Repo: [world-ender1/database-encrypt
 | `sprint0/skeleton` | `08a20eaddcb148a6eb7c252fd383b62106456272` | Mốc lịch sử; không dựng lại hoặc force-push |
 
 Đã đọc refs bằng Git và PR/issue/check-runs bằng GitHub API có xác thực. PR #5 có check `pytest: success`, `mergeable=true`, `mergeable_state=blocked`, chưa có review. Không suy đoán lý do blocked: endpoint branch protection trả 404 nên chưa xác nhận được quy tắc; cần xem yêu cầu trên giao diện repo. Không có check-runs trên commit main nêu trên.
+
+Lần audit bổ sung đọc `branches/main` nhận `protected=true`, `required_status_checks.enforcement_level=off`, danh sách contexts/checks rỗng; rulesets rỗng. TV1 cần kiểm/cấu hình required pytest theo kế hoạch. Kết quả API và review được lưu trong [metadata](evidence/plan_audit_metadata.json).
 
 [Issue #3](https://github.com/world-ender1/database-encryption-lab/issues/3) đã ghi nhận TV2 đồng ý H1. H2–H5 vẫn thiếu nội dung và xác nhận đầy đủ. Bản [TV2_HOP_DONG_ISSUE_3.md](TV2_HOP_DONG_ISSUE_3.md) đã chuẩn bị phần của bạn; chưa đăng lên issue.
 

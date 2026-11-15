@@ -33,6 +33,8 @@ Lần nghiệm thu dùng cấu hình/cổng/volume mới trong bản sao tạm; 
 
 ## Reviewer và điều kiện merge
 
+Audit kế hoạch bổ sung phát hiện tiêu chí tự kết luận của attack_lab còn thiếu (A2 giữ dữ liệu, A4/A5 kiểm code, restore kiểm nội dung). Cần TV3 sửa/review theo docs/DOI_CHIEU_KE_HOACH_CA_NHOM.md; bàn giao test tamper còn trong test_api, chốt lưu CSV và required pytest trước nghiệm thu cuối. Bản draft này chưa phải xác nhận toàn bộ nhóm đã đạt DoD.
+
 TV1 review mapping H1, auth và mô tả mật mã; TV3 review dependencies/fixture, test_security và H2/H3. Hoàn tất nội dung H2–H5 ở issue #3 theo docs/TV2_HOP_DONG_ISSUE_3.md.
 
 Đề xuất merge PR #5 đã review trước, cập nhật nhánh integration/tv2-merge-prep theo main rồi dùng PR này. Khi đó source TV3 đã nằm trong base và diff tập trung vào API/DB cùng thay đổi test tích hợp. Giữ lịch sử commit, không force-push. Xem docs/TV2_MERGE_READINESS.md.

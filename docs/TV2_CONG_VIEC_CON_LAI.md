@@ -2,6 +2,8 @@
 
 Cập nhật 15/11/2026. Nguồn hiện tại: [báo cáo kiểm tra nhánh và nghiệm thu](TV2_MERGE_READINESS.md). Các ghi chú ngày 14/11 về việc còn chờ crypto/TV3 đã được thay thế bằng trạng thái này.
 
+Đối chiếu toàn bộ kế hoạch mới nhất: [bảng cả nhóm và phương án xử lý](DOI_CHIEU_KE_HOACH_CA_NHOM.md). Còn test gây tamper trong test_api cần bàn giao TV3 hoặc đổi thành dependency giả; phần sửa test_security local cần TV3 tiếp nhận. Attack lab cần siết tiêu chí tự kiểm trước khi đóng nghiệm thu cuối.
+
 ## Phần kỹ thuật đã chuẩn bị
 
 - Config, DB/model, schema, mapping H1, CRUD H2, lỗi 404/409/422, Docker và demo client đầy đủ.
@@ -20,7 +22,7 @@ Cập nhật 15/11/2026. Nguồn hiện tại: [báo cáo kiểm tra nhánh và 
 | 3–8 | Đủ code; CRUD hoàn chỉnh, không hạ về khung 501 |
 | 9 | Nghiệm thu bản ghép local đạt; main GitHub chưa có API/DB |
 | 10–12 | Student service, POST/GET đã có test |
-| 13 | Đã đối chiếu code/test TV1; PR #2/#4 đã merge; chưa đăng review mới |
+| 13 | Đã xác minh GitHub: TV2 hvlchv APPROVED PR #2/#4; cả hai đã merge |
 | 14–17 | PUT/DELETE, demo client, test API, api_db.md đã chuẩn bị |
 | 18 | Bản ghép/PR draft sẵn sàng; còn push, PR, reviewer và CI trên commit sẽ merge |
 | 19 | PostgreSQL thật đạt, có tv2_verification.json |

@@ -2,6 +2,8 @@
 
 Ngày 15/11/2026. Kết quả đọc source và chạy test local; chưa đăng review/approve lên GitHub.
 
+Câu trên mô tả thao tác của lượt chuẩn bị, không phủ nhận review trước đây: audit bổ sung xác nhận tài khoản TV2 hvlchv đã APPROVED PR #2/#4. Xem [đối chiếu kế hoạch](DOI_CHIEU_KE_HOACH_CA_NHOM.md) để biết các điểm còn thiếu trong logic kết luận của attack_lab và phân công test.
+
 ## TV1 — PR #2/#4 đã merge
 
 - CryptoService, EncryptedValue, decode_key và auth giữ H1; TV2 truyền đúng ID, field và key_version.
