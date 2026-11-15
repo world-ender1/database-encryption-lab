@@ -3,8 +3,6 @@
 import pytest
 from sqlalchemy import func, select
 
-WAIT_API = pytest.mark.xfail(reason="chờ API CRUD của TV2 trên main", strict=False)
-
 
 def _student_model():
     from app.models import Student
@@ -26,7 +24,6 @@ def _count(db_session):
 # ---------- A1: Thiếu hoặc sai Bearer token -> 401 ----------
 
 
-@WAIT_API
 def test_a1_missing_token_401(client):
     for path in ("/students", "/students/SV9001"):
         response = client.get(path)
@@ -34,7 +31,6 @@ def test_a1_missing_token_401(client):
         assert response.headers.get("www-authenticate") == "Bearer"
 
 
-@WAIT_API
 @pytest.mark.parametrize(
     "headers",
     [
@@ -53,7 +49,6 @@ def test_a1_wrong_token_401(client, headers):
 # ---------- A2: Viewer không được ghi/xóa -> 403 ----------
 
 
-@WAIT_API
 def test_a2_viewer_cannot_write_403(client, viewer_headers, sample_student):
     assert client.post("/students", json=sample_student, headers=viewer_headers).status_code == 403
     update_payload = {k: v for k, v in sample_student.items() if k != "student_id"}
@@ -61,7 +56,6 @@ def test_a2_viewer_cannot_write_403(client, viewer_headers, sample_student):
     assert client.delete("/students/SV9001", headers=viewer_headers).status_code == 403
 
 
-@WAIT_API
 def test_a2_viewer_delete_keeps_row(client, admin_headers, viewer_headers, sample_student):
     _create(client, admin_headers, sample_student)
     assert client.delete("/students/SV9001", headers=viewer_headers).status_code == 403
@@ -73,7 +67,6 @@ def test_a2_viewer_delete_keeps_row(client, admin_headers, viewer_headers, sampl
 # ---------- A3: Cột nhạy cảm trong DB không chứa plaintext ----------
 
 
-@WAIT_API
 def test_a3_db_has_no_plaintext(client, admin_headers, sample_student, db_session):
     _create(client, admin_headers, sample_student)
     student_cls = _student_model()
@@ -94,7 +87,6 @@ def test_a3_db_has_no_plaintext(client, admin_headers, sample_student, db_sessio
 # ---------- A4: Sửa ciphertext hoặc nonce/tag -> 409 integrity_failure ----------
 
 
-@WAIT_API
 def test_a4_tampered_ciphertext_409(client, admin_headers, sample_student, db_session):
     _create(client, admin_headers, sample_student)
     student_cls = _student_model()
@@ -114,7 +106,6 @@ def test_a4_tampered_ciphertext_409(client, admin_headers, sample_student, db_se
     assert listing.json()["student_ids"] == ["SV9001"]
 
 
-@WAIT_API
 def test_a4_tampered_nonce_409(client, admin_headers, sample_student, db_session):
     _create(client, admin_headers, sample_student)
     student_cls = _student_model()
@@ -132,7 +123,6 @@ def test_a4_tampered_nonce_409(client, admin_headers, sample_student, db_session
 # ---------- A5: Tráo ciphertext giữa hai hàng / hai cột -> 409 (AAD mismatch) ----------
 
 
-@WAIT_API
 def test_a5_swapped_between_rows_409(client, admin_headers, sample_student, db_session):
     _create(client, admin_headers, sample_student)
     _create(
@@ -152,7 +142,6 @@ def test_a5_swapped_between_rows_409(client, admin_headers, sample_student, db_s
     assert response.json()["code"] == "integrity_failure"
 
 
-@WAIT_API
 def test_a5_swapped_between_fields_same_row_409(client, admin_headers, sample_student, db_session):
     _create(client, admin_headers, sample_student)
     student_cls = _student_model()
@@ -169,7 +158,6 @@ def test_a5_swapped_between_fields_same_row_409(client, admin_headers, sample_st
 # ---------- PUT phải sinh nonce mới cho cả 3 trường ----------
 
 
-@WAIT_API
 def test_put_reencrypts_all_sensitive_fields_with_fresh_nonces(
     client, admin_headers, sample_student, db_session
 ):
@@ -195,7 +183,6 @@ def test_put_reencrypts_all_sensitive_fields_with_fresh_nonces(
 # ---------- A8: Chuỗi kiểu SQL injection -> 422, DB không đổi ----------
 
 
-@WAIT_API
 @pytest.mark.parametrize(
     "bad_id",
     [
@@ -220,3 +207,24 @@ def test_a8_sql_like_id_422_and_db_unchanged(
     )
     assert post_resp.status_code == 422
     assert _count(db_session) == before
+
+
+# Route-wide authorization regressions handed over from TV2.
+
+@pytest.mark.parametrize("method,path", [("post", "/students"), ("get", "/students"),
+    ("get", "/students/SV9001"), ("put", "/students/SV9001"), ("delete", "/students/SV9001")])
+def test_every_route_requires_token(client, sample_student, method, path):
+    for headers in ({}, {"Authorization": "Bearer wrong"}):
+        response = client.request(method, path, headers=headers, json=sample_student)
+        assert response.status_code == 401
+        assert response.headers["www-authenticate"] == "Bearer"
+
+
+def test_viewer_can_read_but_cannot_write(client, admin_headers, viewer_headers, sample_student):
+    _create(client, admin_headers, sample_student)
+    for path in ("/students", "/students/SV9001"):
+        assert client.get(path, headers=viewer_headers).status_code == 200
+    for method, path in (("post", "/students"), ("put", "/students/SV9001"),
+                         ("delete", "/students/SV9001")):
+        assert client.request(method, path, json=sample_student, headers=viewer_headers).status_code == 403
+    assert client.get("/students/SV9001", headers=admin_headers).json() == sample_student

@@ -67,6 +67,10 @@ def main() -> int:
                     checks["plaintext_absent_in_sensitive_columns"] = all(
                         payload[f].encode("utf-8") not in bytes(row[f"{f}_ct"])
                         for f in ("national_id", "phone", "address"))
+                    checks["ciphertext_includes_16_byte_tag"] = all(
+                        len(row[f"{f}_ct"]) == len(payload[f].encode("utf-8")) + 16
+                        for f in ("national_id", "phone", "address"))
+                    checks["stored_key_version"] = row["key_version"] == (env.get("KEY_VERSION") or "v1")
                     before = {f: bytes(row[f"{f}_nonce"]) for f in ("national_id", "phone", "address")}
                     checks["nonce_lengths_12"] = all(len(n) == 12 for n in before.values())
                 update = {k: v for k, v in payload.items() if k != "student_id"}

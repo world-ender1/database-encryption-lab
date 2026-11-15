@@ -4,7 +4,9 @@ from unittest.mock import Mock
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from app.main import ApiError, create_student
+from app.crypto_service import EncryptedValue
+from app.dependencies import get_crypto
+from app.main import ApiError, app, create_student
 from app.models import Student
 from app.schemas import StudentPayload
 from scripts.demo_client import STUDENTS, seed
@@ -58,6 +60,54 @@ def test_list_is_ordered(client, admin_headers, sample_student):
     assert response.json() == [sample_student, second]
 
 
+def test_sensitive_columns_store_only_crypto_output(
+    client, admin_headers, sample_student, db_session,
+):
+    """H1/H3 boundary: persist exactly the output supplied by TV1, for POST/PUT."""
+    fields = ("national_id", "phone", "address")
+    outputs = {}
+    calls = []
+
+    class RecordingCrypto:
+        key_version = "contract-test"
+
+        def encrypt(self, value, student_id, field):
+            calls.append((value, student_id, field))
+            marker = len(calls)
+            ev = EncryptedValue(bytes([marker]) * 32, bytes([marker]) * 12, self.key_version)
+            outputs[(student_id, field)] = (ev, value)
+            return ev
+
+        def decrypt(self, ev, student_id, field):
+            expected, value = outputs[(student_id, field)]
+            assert ev == expected
+            return value
+
+    previous = app.dependency_overrides.copy()
+    app.dependency_overrides[get_crypto] = RecordingCrypto
+    try:
+        _create(client, admin_headers, sample_student)
+        update = {k: v for k, v in sample_student.items() if k != "student_id"}
+        update["address"] = "Updated contract-test address"
+        for payload in (sample_student, update):
+            if payload is update:
+                response = client.put("/students/SV9001", json=update, headers=admin_headers)
+                assert response.status_code == 200
+                assert response.json() == {"student_id": "SV9001", **update}
+            row = db_session.get(Student, "SV9001")
+            db_session.refresh(row)
+            assert row.key_version == "contract-test"
+            assert calls[-3:] == [(payload[field], "SV9001", field) for field in fields]
+            for field in fields:
+                expected, _ = outputs[("SV9001", field)]
+                assert getattr(row, f"{field}_ct") == expected.ciphertext
+                assert getattr(row, f"{field}_nonce") == expected.nonce
+                assert payload[field].encode("utf-8") not in expected.ciphertext
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(previous)
+
+
 @pytest.mark.parametrize("method", ["get", "put", "delete"])
 def test_missing_record(client, admin_headers, sample_student, method):
     kwargs = {"headers": admin_headers}
@@ -98,17 +148,6 @@ def test_put_rejects_id_extra_and_partial_body(client, admin_headers, sample_stu
                        headers=admin_headers).status_code == 422
 
 
-def test_put_refreshes_every_nonce(client, admin_headers, sample_student, db_session):
-    _create(client, admin_headers, sample_student)
-    row = db_session.get(Student, sample_student["student_id"])
-    fields = ("national_id", "phone", "address")
-    before = [getattr(row, f"{field}_nonce") for field in fields]
-    update = {k: v for k, v in sample_student.items() if k != "student_id"}
-    assert client.put("/students/SV9001", json=update, headers=admin_headers).status_code == 200
-    db_session.refresh(row)
-    assert all(old != getattr(row, f"{field}_nonce") for old, field in zip(before, fields))
-
-
 def test_failed_decryption_blocks_entire_list_and_allows_delete(
     client, admin_headers, sample_student, db_session,
 ):
@@ -125,25 +164,6 @@ def test_failed_decryption_blocks_entire_list_and_allows_delete(
     assert response.status_code == 409
     assert response.json()["code"] == "integrity_failure"
     assert client.delete("/students/SV9001", headers=admin_headers).status_code == 204
-
-
-@pytest.mark.parametrize("method,path", [("post", "/students"), ("get", "/students"),
-    ("get", "/students/SV9001"), ("put", "/students/SV9001"), ("delete", "/students/SV9001")])
-def test_every_route_requires_token(client, sample_student, method, path):
-    for headers in ({}, {"Authorization": "Bearer wrong"}):
-        response = client.request(method, path, headers=headers, json=sample_student)
-        assert response.status_code == 401
-        assert response.headers["www-authenticate"] == "Bearer"
-
-
-def test_viewer_can_read_but_cannot_write(client, admin_headers, viewer_headers, sample_student):
-    _create(client, admin_headers, sample_student)
-    for path in ("/students", "/students/SV9001"):
-        assert client.get(path, headers=viewer_headers).status_code == 200
-    for method, path in (("post", "/students"), ("put", "/students/SV9001"),
-                         ("delete", "/students/SV9001")):
-        assert client.request(method, path, json=sample_student, headers=viewer_headers).status_code == 403
-    assert client.get("/students/SV9001", headers=admin_headers).json() == sample_student
 
 
 def test_concurrent_duplicate_rolls_back(sample_student):
