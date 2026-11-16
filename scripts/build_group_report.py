@@ -21,7 +21,7 @@ COVER = (
     "# BÁO CÁO ĐỒ ÁN: MÃ HÓA DỮ LIỆU NHẠY CẢM TRONG CƠ SỞ DỮ LIỆU\n\n"
     "Môn: Mật mã và An toàn thông tin\n\n"
     "Nhóm 3 thành viên: TV1 [họ tên, MSSV]; TV2 [họ tên, MSSV]; TV3 [họ tên, MSSV]\n\n"
-    "Bản ghép để nhóm rà soát, 16/11/2026. Chưa phải bản nghiệm thu trên main.\n\n"
+    "Bản tổng hợp nghiệm thu trên main, 16/11/2026.\n\n"
 )
 
 
@@ -131,7 +131,7 @@ def export_docx(markdown_path: Path) -> Path:
             doc.add_paragraph(plain(line))
     if table_lines:
         add_table(doc, table_lines)
-    section.footer.paragraphs[0].text = "Database Encryption • Bản ghép nhóm 16/11/2026 • Chờ review/CI/main"
+    section.footer.paragraphs[0].text = "Database Encryption • Bản nghiệm thu trên main • 16/11/2026"
     path = DOCS / "BAO_CAO_TONG_HOP.docx"
     doc.save(path)
     assert len(Document(path).paragraphs) > 100

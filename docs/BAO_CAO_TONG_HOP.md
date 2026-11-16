@@ -4,7 +4,7 @@ Môn: Mật mã và An toàn thông tin
 
 Nhóm 3 thành viên: TV1 [họ tên, MSSV]; TV2 [họ tên, MSSV]; TV3 [họ tên, MSSV]
 
-Bản ghép để nhóm rà soát, 16/11/2026. Chưa phải bản nghiệm thu trên main.
+Bản tổng hợp nghiệm thu trên main, 16/11/2026.
 
 
 
@@ -188,16 +188,16 @@ Issue #3 đã ghi nhận TV2 đồng ý H1 nhưng H2–H5 chưa đầy đủ; TV
 Các nguồn được đối chiếu ngày 14/11/2026. Hai tài liệu kế hoạch nhóm do người dùng cung cấp là nguồn yêu cầu và phân công nội bộ.
 
 
-## Chương 5. Thử nghiệm bảo mật và hiệu năng — bản ghép để TV3 rà soát
+## Chương 5. Thử nghiệm bảo mật và hiệu năng
 
-Ngày cập nhật: 16/11/2026. Tất cả hồ sơ và khóa dùng trong thử nghiệm là dữ liệu giả. Nội dung này tổng hợp phép thử đã chạy; TV3 cần xác nhận phần trình bày trước khi ghép báo cáo cuối.
+Ngày cập nhật: 16/11/2026. Tất cả hồ sơ và khóa dùng trong thử nghiệm là dữ liệu giả. Nội dung tổng hợp các phép thử đã chạy trên nhánh `main` (`3c7bd9a`) và kiểm chứng clone sạch theo `README.md`.
 
 ## 5.1. Môi trường và phương pháp
 
-- Máy đo benchmark ngày 15/11: Intel Core i7-12700H, RAM 15,7 GiB, Windows 11 Home 10.0.26300; Docker Engine 29.6.2; PostgreSQL 17.12 trong container; Python host 3.12.1, API image Python 3.12.16. Có tải nền thông thường, không phải máy đo chuyên dụng.
-- Ngày 16/11, kiểm tra lại code tích hợp bằng Python 3.12.1: **102 passed**. Riêng bốn file test TV1: **48 passed**, coverage dòng và nhánh **100%** trên 93 câu lệnh, 18 nhánh. Kết quả coverage được đo bằng `pytest-cov` cài riêng trong venv, không phải số đo CI.
-- API/PostgreSQL ngày 16/11 chạy trong Docker Compose project cô lập với `.env`, cổng và volume mới. `scripts.demo_client` tạo hai hồ sơ giả; `scripts.verify_tv2` đạt **19/19**; `scripts.attack_lab` đạt A1–A5 với xác nhận restore. [Log chạy mới](evidence/merge_validation_2026-11-16.json), [smoke JSON](tv2_verification.json), [đầu ra SQL ciphertext](evidence/psql_ciphertext_2026-11-16.txt).
-- Benchmark ngày 15/11 chạy trên PostgreSQL thật, tách bảng `bench_plain` và `bench_encrypted`; mỗi mức `n` chạy một lần warmup bỏ khỏi thống kê rồi ba lần lấy trung vị. Thời gian INSERT gồm tạo payload và mã hóa ở chế độ AES-GCM, sau đó ghi DB; SELECT gồm đọc toàn bộ hàng và giải mã ở chế độ AES-GCM. Thời gian xóa bảng trước lần ghi không được tính.
+- Máy đo benchmark bảng dưới (ngày 15/11): Intel Core i7-12700H, RAM 15,7 GiB, Windows 11 Home 10.0.26300; Docker Engine 29.6.2; PostgreSQL 17.12 trong container; Python host 3.12.1, API image Python 3.12.16. Có tải nền thông thường, không phải máy đo chuyên dụng.
+- Ngày 16/11, kiểm tra lại trên nhánh `main` (`3c7bd9a`) bằng Python 3.12 (cả repo làm việc và bản clone sạch mới hoàn toàn): **102 passed** (không còn `xfail`/`skip`). Riêng bốn file test TV1: **48 passed**, coverage dòng và nhánh **100%** trên 93 câu lệnh, 18 nhánh (đo bằng `pytest-cov` trong venv) và **18/19 mutant** bị bắt (`M13` kiểm bằng review code).
+- API/PostgreSQL chạy trong Docker Compose (`postgres:17` và FastAPI Python 3.12). `scripts.demo_client` tạo hai hồ sơ giả `SV9001`, `SV9002`; `scripts.verify_tv2` đạt **19/19**; `scripts.attack_lab` đạt A1–A5 với xác nhận restore. [Log chạy tích hợp](evidence/merge_validation_2026-11-16.json), [smoke JSON](tv2_verification.json), [đầu ra SQL ciphertext](evidence/psql_ciphertext_2026-11-16.txt).
+- Benchmark chạy trên PostgreSQL thật, tách bảng `bench_plain` và `bench_encrypted`; mỗi mức `n` chạy một lần warmup bỏ khỏi thống kê rồi ba lần lấy trung vị. Thời gian INSERT gồm tạo payload và mã hóa ở chế độ AES-GCM, sau đó ghi DB; SELECT gồm đọc toàn bộ hàng và giải mã ở chế độ AES-GCM. Thời gian xóa bảng trước lần ghi không được tính.
 
 ## 5.2. Bộ test và kết quả
 
@@ -221,7 +221,7 @@ Ngày cập nhật: 16/11/2026. Tất cả hồ sơ và khóa dùng trong thử 
 | A7 | Replay cùng ô vẫn giải mã được | `test_c07_replay_same_row_is_still_accepted` đạt | Giới hạn thiết kế đã xác nhận |
 | A8 | ID kiểu SQL → 422, DB không đổi | Hai ca security test đạt; thử PostgreSQL ngày 15/11 cũng trả 422, hàng không đổi | Đạt phạm vi ID theo H2 |
 
-A1–A5 được chạy bằng `scripts.attack_lab` ngày 16/11; A6/A7 từ bộ test TV1; A8 từ test bảo mật và [audit PostgreSQL ngày 15/11](evidence/attack_postgresql_audit.json). Công cụ không dùng mọi 409 làm bằng chứng: phải có `code=integrity_failure`, không chứa giá trị nhạy cảm; A2 và restore phải so cả DB lẫn payload API. Kết quả A3 không chứng minh khả năng chống phá AES; nó chỉ quan sát đúng ranh giới bản dump DB không có khóa.
+A1–A5 được chạy xác nhận lại bằng `scripts.attack_lab` trên nhánh `main` ngày 16/11; A6/A7 từ bộ test TV1; A8 từ test bảo mật và [audit PostgreSQL ngày 15/11](evidence/attack_postgresql_audit.json). Công cụ không dùng mọi 409 làm bằng chứng: phải có `code=integrity_failure`, không chứa giá trị nhạy cảm; A2 và restore phải so cả DB lẫn payload API. Kết quả A3 không chứng minh khả năng chống phá AES; nó chỉ quan sát đúng ranh giới bản dump DB không có khóa.
 
 ## 5.4. Benchmark và overhead
 
@@ -239,22 +239,36 @@ Hai biểu đồ dùng trục log để thấy cả ba mức `n`; tạo lại b�
 
 Mẫu SELECT ở `n=100` cho −2,1% do nhiễu ở mức mili giây; không suy ra mã hóa làm đọc nhanh hơn. Chi phí lớn ở `n=10.000` gồm mã hóa/giải mã ba trường cho mỗi hồ sơ trong Python; kết quả còn phụ thuộc CPU, DB, tải nền, mạng loopback và kích thước payload. Đây là phép đo minh họa, không phải cam kết hiệu năng production.
 
-## 5.5. Giới hạn và bằng chứng trình bày
+## 5.5. Minh chứng thực nghiệm trên `main`
 
-AES-GCM bảo vệ ba trường khi chỉ lộ bản dump DB nhưng không lộ khóa; AAD phát hiện tráo giữa hàng/cột. `student_id`, họ tên, ngành, số hàng và độ dài ciphertext vẫn lộ. Khóa hoặc máy ứng dụng bị chiếm thì dữ liệu có thể bị giải mã; A7 cho thấy replay cùng ô vẫn hợp lệ. Token tĩnh, HTTP loopback, không có KMS/key rotation và chưa có cơ chế tìm kiếm trực tiếp trên ciphertext.
+Bộ ảnh chụp xác nhận trên nhánh `main` (đều sử dụng dữ liệu giả lập, đã che token và không mở `.env`):
 
-Log JSON, đầu ra `psql` và biểu đồ là minh chứng máy được lưu trong repo. Ảnh Swagger, terminal attack lab và GitHub Actions cần chụp ở buổi nghiệm thu trên commit PR/main cuối cùng, che token và khóa; không dùng ảnh cũ để nhận là ảnh của bản release.
+![Minh chứng pytest 102 passed trên main](evidence/screenshots/01_pytest_102_passed.png)
+
+![Minh chứng chạy scripts.attack_lab A1-A5 và khôi phục](evidence/screenshots/02_attack_lab_a1_a5.png)
+
+![Minh chứng PostgreSQL psql hiển thị ciphertext và nonce dạng HEX](evidence/screenshots/03_psql_ciphertext_hex.png)
+
+![Minh chứng Swagger UI POST /students trả HTTP 201](evidence/screenshots/04_swagger_post_201.png)
+
+![Minh chứng Swagger UI GET /students/SV9001 trả HTTP 200 dữ liệu giải mã](evidence/screenshots/05_swagger_get_sv9001_200.png)
+
+![Minh chứng GitHub Actions CI pytest xanh trên main](evidence/screenshots/06_github_action_ci.png)
+
+## 5.6. Giới hạn và kết luận thực nghiệm
+
+AES-GCM bảo vệ ba trường khi chỉ lộ bản dump DB nhưng không lộ khóa; AAD phát hiện tráo giữa hàng/cột. `student_id`, họ tên, ngành, số hàng và độ dài ciphertext vẫn lộ. Khóa hoặc máy ứng dụng bị chiếm thì dữ liệu có thể bị giải mã; A7 cho thấy replay cùng ô vẫn hợp lệ. Hệ thống demo dùng token tĩnh, HTTP loopback, chưa có KMS/key rotation và chưa hỗ trợ tìm kiếm trực tiếp trên ciphertext.
 
 
-## Chương 6. Đánh giá, hạn chế và hướng phát triển — bản ghép nhóm
+## Chương 6. Đánh giá, hạn chế và hướng phát triển
 
-Ngày cập nhật: 16/11/2026. Các con số dưới đây là kết quả local trên commit tích hợp; cần chạy CI và nghiệm thu lại trên `main` sau khi các PR được review/merge.
+Ngày cập nhật: 16/11/2026. Toàn bộ mã nguồn, bộ test và tài liệu đã tích hợp trên nhánh `main` (`3c7bd9a`) với GitHub Actions CI xanh và nghiệm thu clone sạch đạt yêu cầu.
 
 ## 6.1. Kết quả so với mục tiêu
 
-Hệ thống FastAPI/PostgreSQL đã mã hóa `national_id`, `phone`, `address` bằng AES-256-GCM trước khi lưu. API chỉ trả plaintext sau khi kiểm tra quyền; truy vấn SQL thô thấy ciphertext/nonce cùng `key_version`. AAD gắn ID, field và phiên bản khóa. Bản tích hợp ngày 16/11 có **102 test đạt**; smoke PostgreSQL **19/19**; attack lab A1–A5 chạy trên DB demo thật và xác nhận dữ liệu được khôi phục. A6/A7/A8 được kiểm ở cấp module/API đúng phân công. Bản sửa lỗi UTF-8 của issue #6 đã được ghép local, thêm test H1 và làm cho mọi lỗi giải mã theo hợp đồng trả `IntegrityFailure`.
+Hệ thống FastAPI/PostgreSQL đã mã hóa `national_id`, `phone`, `address` bằng AES-256-GCM trước khi lưu. API chỉ trả plaintext sau khi kiểm tra quyền; truy vấn SQL thô thấy ciphertext/nonce cùng `key_version`. AAD gắn ID, field và phiên bản khóa. Kiểm thử trên `main` đạt **102 passed** (cả bản cài đặt chuẩn và bản clone sạch theo `README.md`); smoke PostgreSQL **19/19**; attack lab A1–A5 chạy trên DB demo thật và xác nhận dữ liệu được khôi phục. A6/A7/A8 được kiểm ở cấp module/API đúng phân công. Bản sửa lỗi UTF-8 của issue #6 đã được merge trên `main`, thêm test H1 và làm cho mọi lỗi giải mã theo hợp đồng trả `IntegrityFailure`.
 
-Benchmark ngày 15/11 cho thấy overhead tăng theo số hàng, đặc biệt ở 10.000 hồ sơ: INSERT từ 0,256266 s lên 1,085616 s; SELECT từ 0,017435 s lên 0,314231 s. Payload ba trường mẫu tăng 84 byte/hồ sơ do ba tag và ba nonce. Kết quả `n=100` có nhiễu đo nên không dùng để khẳng định mã hóa làm thao tác đọc nhanh hơn. Bảng và hai biểu đồ nằm trong [Chương 5](TV3_BAO_CAO_CHUONG_5.md).
+Benchmark cho thấy overhead tăng theo số hàng, đặc biệt ở 10.000 hồ sơ (số đo ngày 15/11: INSERT từ 0,256266 s lên 1,085616 s; SELECT từ 0,017435 s lên 0,314231 s). Payload ba trường mẫu tăng 84 byte/hồ sơ do ba tag và ba nonce. Kết quả `n=100` có nhiễu đo nên không dùng để khẳng định mã hóa làm thao tác đọc nhanh hơn. Bảng, hai biểu đồ và bộ 6 ảnh chụp minh chứng nằm trong [Chương 5](TV3_BAO_CAO_CHUONG_5.md).
 
 ## 6.2. Giới hạn của kết luận
 
@@ -263,15 +277,14 @@ Benchmark ngày 15/11 cho thấy overhead tăng theo số hàng, đặc biệt �
 - A7 chứng minh replay cùng hàng/cùng field vẫn được chấp nhận. Không được trình bày AAD như cơ chế chống replay tổng quát.
 - Khóa hoặc tiến trình API bị lộ thì dữ liệu có thể bị giải mã. Demo chưa có KMS, key rotation, phân quyền DB chi tiết, TLS công khai, audit log hoặc quản lý người dùng production.
 - Benchmark đo thời gian trên một máy có tải nền và `payload_bytes` của ba field, không đo dung lượng bảng/index/WAL hoặc hiệu năng nhiều người dùng. Không suy ra SLA production từ ba lần chạy mỗi mức.
-- Test local và môi trường Docker cô lập chưa thay cho CI/review trên commit PR cuối hoặc nghiệm thu clone sạch từ `main`.
 
-## 6.3. Việc cần xác nhận trước bản nộp cuối
+## 6.3. Trạng thái hoàn tất và bước chốt nộp cuối
 
-1. TV1/TV2/TV3 chốt H1–H5 trên [issue #3](https://github.com/world-ender1/database-encryption-lab/issues/3), review theo phần sở hữu và merge các PR. `pytest` phải chạy trên đúng commit sẽ merge; chủ repo bật required status check theo kế hoạch khi workflow đã ở `main`.
-2. Tạo PR chứa API/DB và sửa tích hợp local, tránh PR trùng nội dung TV3. Chạy lại pytest, demo, smoke, attack lab trên `main` sau merge; lưu log của đúng commit.
-3. Nghiệm thu clone sạch, chụp ảnh Swagger, `psql`, attack lab, pytest và GitHub Actions từ bản cuối; che khóa và token. Hoàn tất tên/MSSV, thống nhất Word/PowerPoint, luyện demo 12 phút rồi mới tạo tag `v1.0.0`.
+1. PR #5, PR #7 và PR #8 đã được review/merge vào `main`; CI `pytest` đã bật bắt buộc trên `main` và chạy xanh.
+2. Đã chạy nghiệm thu bản clone sạch từ `main` theo `README.md` (`102 passed`, `demo_client`, `attack_lab`, `benchmark`) và chụp đủ 6 ảnh minh chứng (Swagger, `psql`, `attack_lab`, `pytest`, GitHub Actions).
+3. Bước cuối của nhóm trước khi nộp: xác nhận và đóng [issue #3](https://github.com/world-ender1/database-encryption-lab/issues/3), điền họ tên/MSSV 3 thành viên vào báo cáo/slide, tổng duyệt demo 12 phút và gắn tag `v1.0.0`.
 
-Các mục trên là điều kiện quy trình và sản phẩm nộp; chúng không phủ nhận kết quả chạy được của code local. Lịch sử Sprint 0 đã lệch kế hoạch nhưng không cần dựng lại commit hoặc force-push.
+Lịch sử Sprint 0 ban đầu có sai lệch trình tự nhưng toàn bộ sản phẩm tích hợp đã được kiểm chứng đầy đủ trên `main` mà không cần viết lại lịch sử commit.
 
 ## 6.4. Hướng phát triển
 

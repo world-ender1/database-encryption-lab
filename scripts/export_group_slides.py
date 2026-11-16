@@ -19,7 +19,7 @@ def slide_base(prs, number, title, subtitle, owner):
     text_box(slide, 0.55, 0.92, 12.1, 0.72, title, 32, NAVY, True)
     text_box(slide, 0.58, 1.72, 12.0, 0.45, subtitle, 17, GRAY)
     text_box(slide, 0.58, 6.86, 11.5, 0.3,
-             "Bản ghép local 16/11/2026 • Chờ review, CI và nghiệm thu main", 11, AMBER)
+             "Bản nghiệm thu trên main • 16/11/2026", 11, AMBER)
     text_box(slide, 12.15, 6.86, 0.55, 0.3, f"{number:02}", 12, TEAL, True)
     return slide
 
@@ -148,6 +148,53 @@ def main():
              "Metadata vẫn lộ\nLộ khóa/máy API: mất bảo vệ\nA7 replay cùng ô vẫn hợp lệ", 20)
     notes(slide, "Cả nhóm: tổng kết đúng phạm vi, không gọi demo là production. "
           "Nêu CI/review/main và nghiệm thu máy sạch trước tag. Dành thời gian trả lời câu hỏi.")
+
+    def fit_picture(slide, img_path: Path, box_x: float, box_y: float, max_w: float, max_h: float):
+        from PIL import Image
+        with Image.open(img_path) as im:
+            iw, ih = im.size
+        scale = min(max_w / iw, max_h / ih)
+        w, h = iw * scale, ih * scale
+        x = box_x + (max_w - w) / 2
+        y = box_y + (max_h - h) / 2
+        slide.shapes.add_picture(str(img_path), Inches(x), Inches(y), width=Inches(w), height=Inches(h))
+
+    shots = DOCS / "evidence" / "screenshots"
+    backup_pairs = (
+        (
+            10,
+            "Phụ lục • Minh chứng Swagger UI",
+            "Dự phòng demo trực tiếp • POST 201 và GET 200 (đã che token)",
+            "TV2",
+            ("04_swagger_post_201.png", "POST /students -> HTTP 201"),
+            ("05_swagger_get_sv9001_200.png", "GET /students/SV9001 -> HTTP 200"),
+        ),
+        (
+            11,
+            "Phụ lục • Minh chứng PostgreSQL & Attack Lab",
+            "Dự phòng demo • Cột HEX trong DB và mô phỏng A1–A5",
+            "TV3",
+            ("03_psql_ciphertext_hex.png", "psql: national_id_ct & nonce dạng HEX"),
+            ("02_attack_lab_a1_a5.png", "attack_lab: 401/403/409 & restore"),
+        ),
+        (
+            12,
+            "Phụ lục • Kiểm thử tự động & GitHub Actions CI",
+            "Xác nhận trên nhánh main • 102 passed và CI xanh",
+            "TV3",
+            ("01_pytest_102_passed.png", "pytest: 102 passed"),
+            ("06_github_action_ci.png", "GitHub Actions CI (pytest)"),
+        ),
+    )
+    for num, title, subtitle, owner, (img1, cap1), (img2, cap2) in backup_pairs:
+        p1, p2 = shots / img1, shots / img2
+        if p1.exists() and p2.exists():
+            slide = slide_base(prs, num, title, subtitle, owner)
+            fit_picture(slide, p1, 0.55, 2.25, 5.95, 4.15)
+            text_box(slide, 0.55, 6.45, 5.95, 0.35, cap1, 13, NAVY, True)
+            fit_picture(slide, p2, 6.83, 2.25, 5.95, 4.15)
+            text_box(slide, 6.83, 6.45, 5.95, 0.35, cap2, 13, NAVY, True)
+            notes(slide, f"Slide dự phòng {num}: {cap1}; {cap2}.")
 
     for slide in prs.slides:
         for shape in slide.shapes:
