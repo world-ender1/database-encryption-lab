@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from app.crypto_service import EncryptedValue
+from app.crypto_service import EncryptedValue, IntegrityFailure
 from app.dependencies import get_crypto
 from app.main import ApiError, app, create_student
 from app.models import Student
@@ -149,21 +149,35 @@ def test_put_rejects_id_extra_and_partial_body(client, admin_headers, sample_stu
 
 
 def test_failed_decryption_blocks_entire_list_and_allows_delete(
-    client, admin_headers, sample_student, db_session,
+    client, admin_headers, sample_student,
 ):
     for sid in ("SV9001", "SV9002", "SV9003"):
         _create(client, admin_headers, {**sample_student, "student_id": sid})
-    for sid in ("SV9001", "SV9003"):
-        db_session.get(Student, sid).phone_ct = b""
-    db_session.commit()
-    response = client.get("/students", headers=admin_headers)
-    assert response.status_code == 409
-    assert response.json() == {"detail": "Encrypted data failed authentication",
-                               "code": "integrity_failure", "student_ids": ["SV9001", "SV9003"]}
-    response = client.get("/students/SV9001", headers=admin_headers)
-    assert response.status_code == 409
-    assert response.json()["code"] == "integrity_failure"
-    assert client.delete("/students/SV9001", headers=admin_headers).status_code == 204
+    real_crypto = get_crypto()
+
+    class FailingCrypto:
+        def decrypt(self, value, student_id, field):
+            if student_id in ("SV9001", "SV9003") and field == "phone":
+                raise IntegrityFailure("simulated H2 decryption failure")
+            return real_crypto.decrypt(value, student_id, field)
+
+    previous = app.dependency_overrides.copy()
+    app.dependency_overrides[get_crypto] = FailingCrypto
+    try:
+        response = client.get("/students", headers=admin_headers)
+        assert response.status_code == 409
+        assert response.json() == {
+            "detail": "Encrypted data failed authentication",
+            "code": "integrity_failure",
+            "student_ids": ["SV9001", "SV9003"],
+        }
+        single = client.get("/students/SV9001", headers=admin_headers)
+        assert single.status_code == 409
+        assert single.json()["code"] == "integrity_failure"
+        assert client.delete("/students/SV9001", headers=admin_headers).status_code == 204
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(previous)
 
 
 def test_concurrent_duplicate_rolls_back(sample_student):

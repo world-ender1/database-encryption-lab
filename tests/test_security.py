@@ -120,6 +120,29 @@ def test_a4_tampered_nonce_409(client, admin_headers, sample_student, db_session
     assert response.json()["code"] == "integrity_failure"
 
 
+def test_tampered_records_block_entire_list_and_allow_delete(
+    client, admin_headers, sample_student, db_session,
+):
+    for sid in ("SV9001", "SV9002", "SV9003"):
+        _create(client, admin_headers, {**sample_student, "student_id": sid})
+    student_cls = _student_model()
+    for sid in ("SV9001", "SV9003"):
+        db_session.get(student_cls, sid).phone_ct = b""
+    db_session.commit()
+
+    listing = client.get("/students", headers=admin_headers)
+    assert listing.status_code == 409
+    assert listing.json() == {
+        "detail": "Encrypted data failed authentication",
+        "code": "integrity_failure",
+        "student_ids": ["SV9001", "SV9003"],
+    }
+    single = client.get("/students/SV9001", headers=admin_headers)
+    assert single.status_code == 409
+    assert single.json()["code"] == "integrity_failure"
+    assert client.delete("/students/SV9001", headers=admin_headers).status_code == 204
+
+
 # ---------- A5: Tráo ciphertext giữa hai hàng / hai cột -> 409 (AAD mismatch) ----------
 
 
