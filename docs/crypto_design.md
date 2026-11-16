@@ -129,11 +129,11 @@ Việc này đổi `CryptoService.__init__` (nhận keyring thay vì một khóa
 
 Code được viết theo TDD. Với mỗi file, test được viết trước trên bản khung chỉ có chữ ký hàm, chạy để thấy đỏ đúng lý do, rồi mới viết code cho xanh. Ở PR AES-GCM, commit test `73f5fb8` (trên bản tạm: `3 failed, 20 passed`) đứng trước commit code `2cfefa5`. Hai test là test đặc tả nên xanh ngay: `test_h1_signatures` giữ chữ ký H1, và C07 ghi lại giới hạn replay.
 
-Bảng test và yêu cầu (47 test trong 4 file):
+Bảng test và yêu cầu (48 test trong 4 file):
 
 | Mã | Yêu cầu | Test | Số test |
 |---|---|---|---|
-| H1 | Chữ ký hàm, các field của `EncryptedValue`, khóa đúng 32 byte, chuỗi AAD | `test_h1_*` trong `test_crypto.py` | 6 |
+| H1 | Chữ ký hàm, các field của `EncryptedValue`, khóa đúng 32 byte, chuỗi AAD; plaintext không phải UTF-8 cũng báo `IntegrityFailure` (issue #6) | `test_h1_*` trong `test_crypto.py` | 7 |
 | C01 | Giải mã ra đúng dữ liệu (tiếng Việt, chuỗi rỗng, chữ số), kể cả bằng một service mới cùng khóa | `test_c01_*` | 4 |
 | C02 | Mỗi lần mã hóa một nonce mới; ciphertext không chứa plaintext | `test_c02_*` | 2 |
 | C03 | Sai khóa: `IntegrityFailure` (A6) | `test_c03_wrong_key` | 1 |
@@ -144,11 +144,11 @@ Bảng test và yêu cầu (47 test trong 4 file):
 | Auth | 401 và 403 đúng chỗ; token ngoài ASCII trả 401; token lấy từ cấu hình | `test_auth_*` trong `test_auth.py` | 10 |
 | Env | `.env` có đúng 8 biến H4, giá trị dùng được, không ghi đè, không in bí mật | các test trong `test_init_env.py` | 6 |
 
-Kết quả ngày 14/11/2026, nhánh `feature/crypto-docs`:
+Kết quả ngày 16/11/2026, nhánh `fix/6-decrypt-utf8` (sau khi thêm test của issue #6):
 
-- `python -m pytest tests/test_key_manager.py tests/test_crypto.py tests/test_auth.py tests/test_init_env.py -q`: `47 passed`. Toàn bộ chạy được khi chưa có file nào của TV2, TV3.
-- Kiểm tra đột biến: một script cài lần lượt 18 lỗi vào 4 file, mỗi lần một lỗi, chạy lại 47 test rồi trả file về như cũ. 17/18 lỗi bị ít nhất một test bắt. Lỗi còn lại, M13, được kiểm bằng đọc code (mục 8). Script này hiện chỉ có trên máy TV1, chưa đưa vào repo.
-- Độ phủ (pytest-cov, có đo nhánh): 100% cho cả 4 file, gồm 90 câu lệnh và 18 nhánh.
+- `python -m pytest tests/test_key_manager.py tests/test_crypto.py tests/test_auth.py tests/test_init_env.py -q`: `48 passed`. Toàn bộ chạy được khi chưa có file nào của TV2, TV3.
+- Kiểm tra đột biến: một script cài lần lượt 19 lỗi vào 4 file, mỗi lần một lỗi, chạy lại 48 test rồi trả file về như cũ. 18/19 lỗi bị ít nhất một test bắt. Lỗi còn lại, M13, được kiểm bằng đọc code (mục 8). Script này hiện chỉ có trên máy TV1, chưa đưa vào repo.
+- Độ phủ (pytest-cov, có đo nhánh): 100% cho cả 4 file, gồm 93 câu lệnh và 18 nhánh.
 
 | Mã | Lỗi cài vào | Test bắt đầu tiên |
 |---|---|---|
@@ -170,6 +170,7 @@ Kết quả ngày 14/11/2026, nhánh `feature/crypto-docs`:
 | M16 | Không có token vẫn đọc được | `test_auth_401_without_valid_token[missing]` |
 | M17 | Ghi đè `.env` cũ | `test_existing_env_is_not_overwritten` |
 | M18 | `DATABASE_URL` không khớp mật khẩu | `test_env_values_are_usable` |
+| M19 | Không đổi `UnicodeDecodeError` thành `IntegrityFailure` (issue #6) | `test_h1_non_utf8_plaintext_raises_integrity_failure` |
 
 Chạy lại độ phủ (cần cài `pytest-cov`, chưa có trong `requirements.txt`):
 

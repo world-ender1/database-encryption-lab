@@ -10,7 +10,7 @@ NONCE_SIZE = 12
 
 
 class IntegrityFailure(Exception):
-    """Giải mã thất bại: sai key, nonce, AAD hoặc dữ liệu đã bị sửa."""
+    """Giải mã thất bại: sai key, nonce, AAD, dữ liệu đã bị sửa, hoặc plaintext không phải UTF-8."""
 
 
 @dataclass(frozen=True)
@@ -47,4 +47,7 @@ class CryptoService:
                                    self._aad(student_id, field, ev.key_version))
         except InvalidTag as exc:
             raise IntegrityFailure("Authentication failed") from exc
-        return pt.decode("utf-8")
+        try:
+            return pt.decode("utf-8")
+        except UnicodeDecodeError as exc:  # tag đúng nhưng không phải UTF-8: chỉ người có key tạo được
+            raise IntegrityFailure("Plaintext không phải UTF-8") from exc
