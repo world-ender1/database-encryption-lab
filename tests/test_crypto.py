@@ -55,6 +55,15 @@ def test_h1_known_vector_matches_aad_contract(crypto):
     assert crypto.decrypt(ev, "SV9001", "address") == "Ha Noi"
 
 
+def test_h1_non_utf8_plaintext_raises_integrity_failure(crypto):  # issue #6
+    # H1: mọi lỗi giải mã đều là IntegrityFailure. Cùng key, nonce, AAD với vector trên,
+    # nhưng plaintext là b"\xff" (không phải UTF-8): tag đúng, decode UTF-8 lỗi.
+    # Chỉ người có key mới tạo được ca này; lọt UnicodeDecodeError thì API trả 500 thay vì 409.
+    ev = EncryptedValue(bytes.fromhex("b87d543c63132c254d7a88889c2ac60a36"), bytes(range(12)), "v1")
+    with pytest.raises(IntegrityFailure):
+        crypto.decrypt(ev, "SV9001", "address")
+
+
 # ---------- C01: mã hóa rồi giải mã ra đúng dữ liệu ----------
 
 @pytest.mark.parametrize("text", ["Hà Nội – Phường Giả Lập", "", "012345678901"],
