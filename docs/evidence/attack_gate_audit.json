@@ -1,0 +1,27 @@
+{
+  "source_commit": "3edd89bcbaba3b6adf93374b77cd30a0c0854030",
+  "method": "Mock HTTP/DB responses to test the lab's verdict logic, not the application",
+  "findings": {
+    "a2_missing_row_not_in_return_value": {
+      "injected_statuses": [
+        403,
+        404
+      ],
+      "returned": 403,
+      "printed_row_still_there": false,
+      "finding": "main checks c2 == 403; row-preservation predicate is discarded"
+    },
+    "a4_wrong_error_code_accepted": {
+      "injected_status": 409,
+      "injected_code": "duplicate_student",
+      "returned": 409,
+      "response_body_checked": false
+    },
+    "a5_wrong_error_code_accepted": {
+      "injected_status": 409,
+      "injected_code": "duplicate_student",
+      "returned": 409,
+      "response_body_checked": false
+    }
+  }
+}

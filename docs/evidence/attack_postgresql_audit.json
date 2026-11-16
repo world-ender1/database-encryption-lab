@@ -1,0 +1,23 @@
+{
+  "checked_at_utc": "2026-11-15T16:21:37.704260+00:00",
+  "checks": {
+    "precondition_SV9001": true,
+    "precondition_SV9002": true,
+    "A1_401_and_bearer_header": true,
+    "A2_403_and_full_rows_unchanged": true,
+    "A2_read_matches_original": true,
+    "A3_three_fields_no_plaintext_and_correct_lengths": true,
+    "A4_409_integrity_failure": true,
+    "A4_restore_all_rows_byte_exact": true,
+    "A4_restore_api_original_payloads": true,
+    "A4_restore_after_http_exception": true,
+    "A5_409_integrity_failure": true,
+    "A5_restore_all_rows_byte_exact": true,
+    "A5_restore_api_original_payloads": true,
+    "A5_restore_after_http_exception": true,
+    "A8_case_1_422_and_full_rows_unchanged": true,
+    "A8_case_2_422_and_full_rows_unchanged": true,
+    "final_both_students_read_original": true
+  },
+  "result": "pass"
+}

@@ -55,6 +55,12 @@ python -m pip install -r requirements.txt
   ```bash
   python -m scripts.benchmark
   ```
+- Vẽ hai biểu đồ từ CSV vừa đo (cài `matplotlib` trong môi trường dùng để làm báo cáo):
+  ```bash
+  python -m pip install matplotlib
+  python -m scripts.plot_benchmark --csv benchmark_results.csv
+  ```
+  Bảng số đo đã nghiệm thu và biểu đồ để ghép báo cáo nằm trong [Chương 5](docs/TV3_BAO_CAO_CHUONG_5.md).
 
 ## 5. Quan sát ciphertext trực tiếp trong PostgreSQL
 ```bash
@@ -71,3 +77,6 @@ docker compose down
 - Thiết kế API & PostgreSQL: [docs/api_db.md](docs/api_db.md)
 - Threat Model (A1–A8 & giới hạn): [docs/threat_model.md](docs/threat_model.md)
 - Kịch bản Demo 12 phút: [docs/demo_script.md](docs/demo_script.md)
+- Bản ghép báo cáo sáu chương để nhóm review: [Markdown](docs/BAO_CAO_TONG_HOP.md), [Word](docs/BAO_CAO_TONG_HOP.docx)
+- Bản slide chung để nhóm review: [nội dung và lời dẫn](docs/SLIDE_TONG_HOP.md), [PowerPoint](docs/SLIDE_TONG_HOP.pptx)
+- Hai biểu đồ và số liệu thực nghiệm: [Chương 5](docs/TV3_BAO_CAO_CHUONG_5.md)

@@ -1,0 +1,18 @@
+{
+  "scripts.demo_client": {
+    "exit_code": 0,
+    "stdout": "SV9001: created (201)\nGET SV9001 -> 200\nSV9002: created (201)\nGET SV9002 -> 200\n"
+  },
+  "scripts.verify_tv2": {
+    "exit_code": 0,
+    "stdout": "PASS schema_h3_bytea\nPASS health_200\nPASS missing_token_401\nPASS create_201\nPASS create_roundtrip\nPASS duplicate_409\nPASS viewer_read_200\nPASS read_roundtrip\nPASS viewer_write_403\nPASS put_id_422\nPASS plaintext_absent_in_sensitive_columns\nPASS ciphertext_includes_16_byte_tag\nPASS stored_key_version\nPASS nonce_lengths_12\nPASS put_200\nPASS put_roundtrip\nPASS put_refreshes_three_nonces\nPASS delete_204\nPASS deleted_get_404\nResult: pass; evidence: docs/tv2_verification.json\n"
+  },
+  "scripts.attack_lab": {
+    "exit_code": 0,
+    "stdout": "[A1] Missing bearer token -> 401\n[A2] Viewer attempts DELETE -> 403 | row still there: True\n[A3] DB contains ciphertext, not the plaintext: True\n[A4] Tampered 1 ciphertext byte -> 409\n[A5] Swapped fields between students -> 409\n[Restore] legitimate read -> 200\n"
+  },
+  "scripts.benchmark": {
+    "exit_code": 0,
+    "stdout": "{'n': 100, 'mode': 'plain', 'insert_seconds_median': 0.00718, 'read_seconds_median': 0.003379, 'payload_bytes': 4000}\n{'n': 100, 'mode': 'aes-gcm', 'insert_seconds_median': 0.009313, 'read_seconds_median': 0.003308, 'payload_bytes': 12400}\n{'n': 1000, 'mode': 'plain', 'insert_seconds_median': 0.031539, 'read_seconds_median': 0.004598, 'payload_bytes': 40000}\n{'n': 1000, 'mode': 'aes-gcm', 'insert_seconds_median': 0.037374, 'read_seconds_median': 0.012758, 'payload_bytes': 124000}\n{'n': 10000, 'mode': 'plain', 'insert_seconds_median': 0.256266, 'read_seconds_median': 0.017435, 'payload_bytes': 400000}\n{'n': 10000, 'mode': 'aes-gcm', 'insert_seconds_median': 1.085616, 'read_seconds_median': 0.314231, 'payload_bytes': 1240000}\nWrote benchmark_results.csv\n"
+  }
+}

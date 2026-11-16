@@ -1,0 +1,22 @@
+{
+  "checked_at_utc": "2026-11-16T08:25:39.839857+00:00",
+  "source_commit": "97d4f89",
+  "environment": "isolated Docker Compose project codex_runtime_review, new .env and volume, localhost ports",
+  "results": {
+    "pytest": {
+      "exit_code": 0,
+      "stdout": "........................................................................ [ 70%]\n..............................                                           [100%]\n============================== warnings summary ===============================\n..\\.venv\\Lib\\site-packages\\starlette\\testclient.py:51\n  G:\\\\STUDYING TIME\\\\BTL UET\\\\M\\u1eadt m\\xe3\\\\database-encryption-lab\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\testclient.py:51: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.\\n    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n102 passed, 1 warning in 1.53s\n",
+      "stderr": ""
+    },
+    "verify_tv2": {
+      "exit_code": 0,
+      "stdout": "PASS schema_h3_bytea\nPASS health_200\nPASS missing_token_401\nPASS create_201\nPASS create_roundtrip\nPASS duplicate_409\nPASS viewer_read_200\nPASS read_roundtrip\nPASS viewer_write_403\nPASS put_id_422\nPASS plaintext_absent_in_sensitive_columns\nPASS ciphertext_includes_16_byte_tag\nPASS stored_key_version\nPASS nonce_lengths_12\nPASS put_200\nPASS put_roundtrip\nPASS put_refreshes_three_nonces\nPASS delete_204\nPASS deleted_get_404\nResult: pass; evidence: docs/tv2_verification.json\n",
+      "stderr": ""
+    },
+    "attack_lab": {
+      "exit_code": 0,
+      "stdout": "[A1] Missing bearer token -> 401\n[A2] Viewer DELETE -> 403 | DB and API payload unchanged: True\n[A3] All demo sensitive columns contain ciphertext: True\n[A4] Tampered ciphertext -> 409 integrity_failure: True\n[A4] Original DB bytes and API payload restored: True\n[A5] Swapped ciphertext and nonce -> 409 integrity_failure: True\n[A5] Both DB rows and API payloads restored: True\n",
+      "stderr": ""
+    }
+  }
+}

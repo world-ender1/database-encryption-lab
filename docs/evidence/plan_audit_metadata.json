@@ -1,0 +1,91 @@
+{
+  "checked_at_utc": "2026-11-15T16:28:57.840270+00:00",
+  "source_commit": "9eb7bbcf02cd4cc356205b34e34f4533ee20e678",
+  "plan_file_sha256": {
+    "Ke_hoach_Database_Encryption_3_thanh_vien_v4.docx": "23f396dd9587aa846426478abae897a01ae93696821a9f5288adfece6194b322",
+    "Ke_hoach_thuc_hien_TV1.md": "2f5d0d3b2560201b005cf9e84c39eb62d2b23f8841d92989ccc5cb150138a710",
+    "Ke_hoach_thuc_hien_TV2.md": "fe5ecbb778446cbe7e97db39264015bcee109613d0deb590b80f6fddc5edfe3d",
+    "Ke_hoach_thuc_hien_TV3.md": "c1b83697bcc98f2f6de4f087df7b3964a1262dd9c3b8d9dbbb31d297ce566191"
+  },
+  "selected_attack_tests": [
+    {
+      "class": "tests.test_crypto",
+      "name": "test_c03_wrong_key",
+      "result": "passed"
+    },
+    {
+      "class": "tests.test_crypto",
+      "name": "test_c07_replay_same_row_is_still_accepted",
+      "result": "passed"
+    },
+    {
+      "class": "tests.test_security",
+      "name": "test_a8_sql_like_id_422_and_db_unchanged[or_injection]",
+      "result": "passed"
+    },
+    {
+      "class": "tests.test_security",
+      "name": "test_a8_sql_like_id_422_and_db_unchanged[drop_table]",
+      "result": "passed"
+    }
+  ],
+  "pull_requests": [
+    {
+      "number": 5,
+      "state": "open",
+      "merged_at": null,
+      "head": "feature/security-benchmark"
+    },
+    {
+      "number": 4,
+      "state": "closed",
+      "merged_at": "2026-11-14T09:17:53Z",
+      "head": "feature/crypto-docs"
+    },
+    {
+      "number": 2,
+      "state": "closed",
+      "merged_at": "2026-11-14T06:22:34Z",
+      "head": "feature/crypto"
+    },
+    {
+      "number": 1,
+      "state": "closed",
+      "merged_at": "2026-11-13T16:39:24Z",
+      "head": "sprint0/skeleton"
+    }
+  ],
+  "reviews": {
+    "pulls/1/reviews": [],
+    "pulls/2/reviews": [
+      {
+        "author": "hvlchv",
+        "state": "APPROVED",
+        "body": ""
+      }
+    ],
+    "pulls/4/reviews": [
+      {
+        "author": "hvlchv",
+        "state": "APPROVED",
+        "body": ""
+      }
+    ],
+    "pulls/5/reviews": []
+  },
+  "main_protection_summary": {
+    "name": "main",
+    "protected": true,
+    "protection": {
+      "enabled": true,
+      "required_status_checks": {
+        "enforcement_level": "off",
+        "contexts": [],
+        "checks": []
+      }
+    }
+  },
+  "rulesets": [],
+  "remote_tags": [],
+  "scope_note": "No production application or existing test source changed during this plan audit."
+}
