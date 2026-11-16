@@ -2,6 +2,8 @@
 
 Ngày kiểm tra: 15/11/2026 (Asia/Saigon). Repo: [world-ender1/database-encryption-lab](https://github.com/world-ender1/database-encryption-lab).
 
+> Tài liệu này giữ kết quả ngày 15/11. [Trạng thái sau khi sửa 16/11](DOI_CHIEU_CAP_NHAT_16_11_2026.md#trạng-thái-sau-khi-sửa-trên-nhánh-tích-hợp-local) đã có 102 test, attack lab kiểm đủ điều kiện và Chương 5/biểu đồ. Không dùng số 91 ở dưới làm số test hiện tại.
+
 **Kết luận:** code ba thành viên đã đủ để chạy tích hợp và đã vượt qua các kiểm tra bên dưới. Phần kỹ thuật TV2 đã chuẩn bị trên nhánh local `integration/tv2-merge-prep`. Toàn bộ đồ án chưa thể đánh dấu hoàn tất: còn xác nhận hợp đồng, review/merge/CI trên GitHub, báo cáo chung và tổng duyệt.
 
 **Bổ sung sau đối chiếu đầy đủ kế hoạch:** xem [DOI_CHIEU_KE_HOACH_CA_NHOM.md](DOI_CHIEU_KE_HOACH_CA_NHOM.md). Hành vi A1–A8 đạt phạm vi kế hoạch, nhưng cần siết điều kiện kết luận A2/A4/A5/restore của attack lab, xử lý phân công test tamper và chốt cách lưu CSV. GitHub xác nhận TV2 đã approve PR #2/#4; main có bảo vệ nhưng thông tin required status checks đang off/rỗng. Bản ghép local chưa phải sản phẩm đã hoàn tất mọi điều kiện bàn giao.
@@ -50,7 +52,7 @@ Cả hai lần pytest có một DeprecationWarning từ Starlette/AnyIO; không 
 
 Docker dùng project thử riêng, thư mục tạm, cổng tự chọn, khóa/token mới và volume riêng. Không dùng `.env` hay dữ liệu đang có của bạn. Các container thử được dừng sau khi lưu kết quả; volume thử được giữ lại. Lần chạy không phải nghiệm thu trên máy sạch độc lập: Windows đã có venv/Docker, image API được build với dependencies cài mới. Test Linux được chạy sau khi chép tests/scripts và `.env.example` vào container thử.
 
-Bằng chứng: [log tích hợp](evidence/tv2_integration_runs.json), [CSV benchmark](evidence/benchmark_integration.csv), [môi trường và cách đọc kết quả](evidence/README.md). CSV là số đo tham khảo trên máy hiện tại; chưa thay biểu đồ/phân tích Chương 5 của TV3. Không có khóa/token/URL chứa mật khẩu trong bằng chứng.
+Bằng chứng: [log tích hợp](evidence/tv2_integration_runs.json), [bảng và biểu đồ benchmark trong Chương 5](TV3_BAO_CAO_CHUONG_5.md), [môi trường và cách đọc kết quả](evidence/README.md). Bản sao CSV từng có ở evidence đã được bỏ ở đợt sửa 16/11 theo kế hoạch TV3. Không có khóa/token/URL chứa mật khẩu trong bằng chứng.
 
 ## Thứ tự merge đề xuất
 

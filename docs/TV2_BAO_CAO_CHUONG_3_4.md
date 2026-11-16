@@ -1,6 +1,6 @@
 # Bản nháp báo cáo — Phần thành viên 2
 
-Ngày cập nhật: 15/11/2026. Người thực hiện: [điền họ tên, MSSV].
+Ngày cập nhật: 16/11/2026. Người thực hiện: [điền họ tên, MSSV].
 
 Tài liệu mô tả bản tích hợp local `integration/tv2-merge-prep`: API/DB của TV2, AES-256-GCM của TV1 đã merge vào main và phần kiểm thử của TV3. Phần 4.5 được đối chiếu với mã TV1 và tài liệu `docs/crypto_design.md`; phần 4.6 ghi kết quả chạy thực tế. Nhóm cần review và ghép báo cáo cuối; chưa coi các kiểm tra local là PR đã được duyệt hoặc bản phát hành.
 
@@ -90,7 +90,7 @@ Volume pgdata lưu dữ liệu PostgreSQL qua các lần dừng/tạo lại cont
 
 Module sử dụng AES-256-GCM: khóa 32 byte, nonce 12 byte, ciphertext kèm tag 16 byte, AAD theo định dạng student:<id>|field:<field>|key:<version>. Tài liệu cryptography mô tả AESGCM giải mã thất bại khi ciphertext, key, nonce hoặc associated data sai; nonce không được tái sử dụng với cùng khóa [4].
 
-PR #2 của TV1 đã thay bản tạm bằng AESGCM; PR #4 bổ sung tài liệu thiết kế và test replay. encrypt sinh nonce bằng os.urandom(12), mã hóa UTF-8 với AAD và trả EncryptedValue. decrypt kiểm key_version, độ dài nonce, dựng lại AAD và chuyển InvalidTag thành IntegrityFailure để API trả 409. TV2 giữ nguyên interface và không sửa thuật toán của TV1.
+PR #2 của TV1 đã thay bản tạm bằng AESGCM; PR #4 bổ sung tài liệu thiết kế và test replay. Bản sửa issue #6 đã được ghép vào nhánh tích hợp local: plaintext xác thực đúng nhưng không phải UTF-8 cũng chuyển thành IntegrityFailure. encrypt sinh nonce bằng os.urandom(12), mã hóa UTF-8 với AAD và trả EncryptedValue. decrypt kiểm key_version, độ dài nonce, dựng lại AAD rồi chuẩn hóa InvalidTag/UnicodeDecodeError thành IntegrityFailure để API trả 409. TV2 giữ nguyên interface và không sửa thuật toán của TV1.
 
 AAD ràng buộc ciphertext với hàng, cột và phiên bản khóa; không chặn được việc chép lại ciphertext cũ của cùng ô. Test C07 ghi nhận giới hạn replay này. Nonce là ngẫu nhiên chứ không phải bộ đếm đảm bảo duy nhất; demo chưa có cơ chế đếm lần mã hóa hoặc xoay khóa. Chi tiết quản lý khóa và giới hạn được TV1 trình bày trong docs/crypto_design.md.
 
@@ -98,19 +98,19 @@ Xác thực dùng hai token tĩnh, HTTPBearer(auto_error=False) và secrets.comp
 
 ### 4.6. Kiểm thử và bằng chứng hiện có
 
-Lần chạy tích hợp ngày 15/11/2026: 91 passed, không xfail/skip. Toàn bộ test chờ API của TV3 đã bỏ marker sau khi chạy kiểm chứng bằng --runxfail. Kết quả cũ 73 passed / 3 xfailed của bản crypto tạm không còn mô tả bản hiện tại. Đây là kết quả local; CI của PR tích hợp phải chạy riêng trên commit sẽ merge.
+Lần chạy tích hợp ngày 16/11/2026: 102 passed, không xfail/skip. Toàn bộ test chờ API của TV3 đã bỏ marker; thêm test công cụ kết luận attack lab và bản sửa UTF-8. Kết quả cũ 73 passed / 3 xfailed của bản crypto tạm không còn mô tả bản hiện tại. Đây là kết quả local; CI của PR tích hợp phải chạy riêng trên commit sẽ merge.
 
 Bộ test API kiểm CRUD, bản ghi trùng, ID/độ dài dữ liệu sai, JSON lỗi, lỗi danh sách nhiều hồ sơ hỏng và lưu đúng đầu ra H1 cho cả POST/PUT. Test quyền từng route và nonce mới đặt trong test_security của TV3. Fixture SQLite cô lập DB từng test và override get_db. Kết quả này được phân biệt với kiểm thử end-to-end trên PostgreSQL.
 
 Docker được build từ nguồn tích hợp, dùng cấu hình/khóa, cổng và volume thử nghiệm riêng. scripts/verify_tv2.py đạt 19/19 điều kiện, exit 0: schema BYTEA, CRUD/quyền/mã lỗi, không thấy plaintext trong ciphertext, tag 16 byte, nonce 12 byte, key_version và nonce mới sau PUT. File docs/tv2_verification.json ghi phiên bản PostgreSQL thực tế và thời điểm UTC. Smoke check chỉ kiểm các điều kiện đó, không phải chứng minh an toàn mật mã tổng quát.
 
-Attack lab của TV3 đạt A1=401, A2=403, A3=True, A4=409, A5=409 và Restore=200. Benchmark chạy đủ 100/1.000/10.000 bản ghi, lưu CSV và log trong docs/evidence. Số đo chỉ phục vụ kiểm tích hợp trên máy hiện tại; TV3 phụ trách biểu đồ, cấu hình máy và thảo luận nhiễu đo ở Chương 5. Không dùng lần chạy này để kết luận hệ thống production đã được kiểm toán.
+Attack lab ngày 16/11 đạt A1=401, A2=403 và DB/payload nguyên, A3=True trên cả ba field, A4/A5=409 đúng `integrity_failure` và restore từng hàng/payload. Benchmark ngày 15/11 chạy đủ 100/1.000/10.000 bản ghi; sáu hàng số đo, biểu đồ và thảo luận nhiễu đã đưa vào Chương 5, CSV gốc không commit. Không dùng các lần chạy này để kết luận hệ thống production đã được kiểm toán.
 
 ### 4.7. Quy trình Git và bàn giao
 
 Nhánh integration/tv2-merge-prep được tạo từ feature/api-db tại 0017e18, ghép origin/main tại 692337a và feature/security-benchmark tại 3edd89b. Hai xung đột dependencies/fixture được giải quyết bằng bản TV3. Nhánh nguồn của bạn và các nhánh GitHub được giữ nguyên trong lần chuẩn bị này. Nội dung PR và thứ tự merge nằm trong docs/TV2_PR_DRAFT.md và docs/TV2_MERGE_READINESS.md.
 
-Issue #3 đã ghi nhận TV2 đồng ý H1 nhưng H2–H5 chưa đầy đủ; TV2 có bản nội dung chuẩn bị để nhóm xác nhận. PR #5 của TV3 đang mở, CI success nhưng chưa có review tại thời điểm kiểm tra. Cần review, CI trên commit tích hợp và merge trên GitHub trước khi gọi là hoàn tất bàn giao. TV1 ghép báo cáo, TV3 hoàn thiện Chương 5/release; TV2 điền thông tin cá nhân, luyện demo 3 phút và tổng duyệt cùng nhóm 12 phút.
+Issue #3 đã ghi nhận TV2 đồng ý H1 nhưng H2–H5 chưa đầy đủ; TV2 có bản nội dung chuẩn bị để nhóm xác nhận. PR #5 của TV3 và PR #7 của TV1 đang mở; code #7 đã ghép local nhưng chưa merge remote. Cần review, CI trên commit tích hợp và merge trên GitHub trước khi gọi là hoàn tất bàn giao. TV1/TV3 cần xác nhận nội dung Chương 1–2/5–6 đã chuẩn bị; TV2 điền thông tin cá nhân, luyện demo 3 phút và tổng duyệt cùng nhóm 12 phút.
 
 ## Tài liệu tham khảo
 

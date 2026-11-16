@@ -147,7 +147,7 @@ Bảng test và yêu cầu (48 test trong 4 file):
 Kết quả ngày 16/11/2026, nhánh `fix/6-decrypt-utf8` (sau khi thêm test của issue #6):
 
 - `python -m pytest tests/test_key_manager.py tests/test_crypto.py tests/test_auth.py tests/test_init_env.py -q`: `48 passed`. Toàn bộ chạy được khi chưa có file nào của TV2, TV3.
-- Kiểm tra đột biến: một script cài lần lượt 19 lỗi vào 4 file, mỗi lần một lỗi, chạy lại 48 test rồi trả file về như cũ. 18/19 lỗi bị ít nhất một test bắt. Lỗi còn lại, M13, được kiểm bằng đọc code (mục 8). Script này hiện chỉ có trên máy TV1, chưa đưa vào repo.
+- Kiểm tra đột biến gốc của TV1: 19 lỗi, 18/19 bị test bắt; M13 kiểm bằng đọc code (mục 8). Ngày 16/11, bản tích hợp bổ sung `scripts/recheck_tv1_mutations.py` để **tái kiểm độc lập** cả 19 lỗi trên bản sao tạm: cũng 18/19 bị bắt, M13 sống sót. Xem [kết quả và lệnh chạy](evidence/tv1_coverage_2026-11-16.md); đây không phải log TDD gốc của TV1.
 - Độ phủ (pytest-cov, có đo nhánh): 100% cho cả 4 file, gồm 93 câu lệnh và 18 nhánh.
 
 | Mã | Lỗi cài vào | Test bắt đầu tiên |

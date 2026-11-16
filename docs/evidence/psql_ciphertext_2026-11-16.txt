@@ -1,0 +1,5 @@
+ student_id |                    national_id_ct_hex                    | nonce_bytes | key_version
+------------+----------------------------------------------------------+-------------+-------------
+ SV9001     | 76441e0c980dab4728448a605e1a364dcc5615f745e42302ebb1d40f |          12 | v1
+ SV9002     | da15a1546ab0bc57f11d6f5f3b41589c1aeac23adbedad0eb47bc861 |          12 | v1
+(2 rows)

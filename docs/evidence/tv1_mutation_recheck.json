@@ -1,0 +1,102 @@
+{
+  "checked_at_utc": "2026-11-16T08:34:23.197893+00:00",
+  "method": "temporary source copy; all 48 TV1 tests run for each mutant",
+  "note": "M13 equality comparison is expected to survive functional tests; inspect code for compare_digest.",
+  "results": {
+    "M1": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_c02_nonce_and_ciphertext_differ",
+      "pytest_exit_code": 1
+    },
+    "M2": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_c01_roundtrip[vietnamese]",
+      "pytest_exit_code": 1
+    },
+    "M3": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_h1_known_vector_matches_aad_contract",
+      "pytest_exit_code": 1
+    },
+    "M4": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_c05_wrong_key_version",
+      "pytest_exit_code": 1
+    },
+    "M5": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_c04_tampered_nonce[empty]",
+      "pytest_exit_code": 1
+    },
+    "M6": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_c03_wrong_key",
+      "pytest_exit_code": 1
+    },
+    "M7": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_h1_known_vector_matches_aad_contract",
+      "pytest_exit_code": 1
+    },
+    "M8": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_h1_key_must_be_32_bytes[16]",
+      "pytest_exit_code": 1
+    },
+    "M9": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_key_manager.py::test_c06_bad_key_rejected[junk_char]",
+      "pytest_exit_code": 1
+    },
+    "M10": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_key_manager.py::test_c06_bad_key_rejected[33_bytes]",
+      "pytest_exit_code": 1
+    },
+    "M11": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_key_manager.py::test_c06_error_message_does_not_leak_key",
+      "pytest_exit_code": 1
+    },
+    "M12": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_auth.py::test_auth_non_ascii_token_gives_401_not_500",
+      "pytest_exit_code": 1
+    },
+    "M13": {
+      "killed_by_test": false,
+      "first_failed_test": null,
+      "pytest_exit_code": 0
+    },
+    "M14": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_auth.py::test_auth_viewer_cannot_write",
+      "pytest_exit_code": 1
+    },
+    "M15": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_auth.py::test_auth_401_without_valid_token[missing]",
+      "pytest_exit_code": 1
+    },
+    "M16": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_auth.py::test_auth_401_without_valid_token[missing]",
+      "pytest_exit_code": 1
+    },
+    "M17": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_init_env.py::test_existing_env_is_not_overwritten",
+      "pytest_exit_code": 1
+    },
+    "M18": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_init_env.py::test_env_values_are_usable",
+      "pytest_exit_code": 1
+    },
+    "M19": {
+      "killed_by_test": true,
+      "first_failed_test": "tests/test_crypto.py::test_h1_non_utf8_plaintext_raises_integrity_failure",
+      "pytest_exit_code": 1
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Slide và lời dẫn TV2 — 3 phút (mốc 2:00–5:00 của nhóm)
 
-**Trạng thái 15/11/2026:** AES-GCM thật đã tích hợp local; 91 test đạt, PostgreSQL 19/19 và attack lab đạt. Dùng bản đã nghiệm thu để luyện; trước trình bày phải khởi động lại stack trên máy demo. Xem TV2_MERGE_READINESS.md; còn review/merge GitHub.
+**Trạng thái 16/11/2026:** AES-GCM thật cùng bản sửa UTF-8 đã tích hợp local; 102 test đạt, PostgreSQL 19/19 và attack lab đạt với kiểm tra khôi phục. Dùng bản đã nghiệm thu để luyện; trước trình bày phải khởi động lại stack trên máy demo. Xem DOI_CHIEU_CAP_NHAT_16_11_2026.md; còn review/merge GitHub.
 
 ## Slide 1 — Kiến trúc hệ thống (2:00–2:30)
 
@@ -55,7 +55,7 @@ Lời dẫn: “Đây là cùng hồ sơ vừa xem qua API. Tên và ngành đư
 ## Slide 4 — Kết quả và chuyển phần (4:40–5:00)
 
 - CRUD và Docker đã có kiểm thử độc lập với thuật toán mã hóa.
-- Kết quả tích hợp: 91 passed, không xfail; PostgreSQL 19/19; attack lab khôi phục được dữ liệu.
+- Kết quả tích hợp: 102 passed, không xfail; PostgreSQL 19/19; attack lab kiểm từng byte hàng và payload sau khôi phục.
 - Chuyển TV3: thử 401/403, sửa dữ liệu, tráo hàng và khôi phục.
 
 Lời dẫn: “Phần API và database cung cấp đường ghi/đọc cùng các mã lỗi ổn định. Tiếp theo, thành viên 3 sẽ kiểm tra hệ thống phản ứng ra sao khi truy cập sai quyền hoặc dữ liệu bị thay đổi.”

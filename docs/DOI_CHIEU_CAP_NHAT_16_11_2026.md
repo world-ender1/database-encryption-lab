@@ -2,6 +2,8 @@
 
 Phạm vi: so sánh GitHub sau `git fetch origin --prune` với [đợt đối chiếu 15/11](DOI_CHIEU_KE_HOACH_CA_NHOM.md), kiểm PR/issue qua GitHub API, ghép thử local và chạy pytest. Không push, merge hoặc sửa PR trên GitHub.
 
+> **Cập nhật sau lần kiểm này:** các mục code F1–F4 và bằng chứng F6/F8 đã được sửa tiếp trên nhánh tích hợp local. Xem mục “Trạng thái sau khi sửa” cuối tài liệu; các đoạn dưới giữ lại kết luận tại thời điểm audit ban đầu.
+
 ## Thay đổi mới
 
 | Thành viên | Nhánh/PR hiện tại | Nhận xét |
@@ -35,8 +37,22 @@ Vì vậy, năm phản ánh mô tả **nhánh TV2 trên GitHub** chính xác, nh
 **Code đủ để chạy demo trên bản tích hợp local; chưa sẵn sàng merge trên GitHub theo quy trình nhóm.** Lý do trực tiếp: PR #5/#7 còn blocked và chưa có review, nhánh tích hợp TV2 chưa có PR, CI chưa chạy trên đúng commit tích hợp. Các điểm F1–F9 trong [đối chiếu 15/11](DOI_CHIEU_KE_HOACH_CA_NHOM.md) chưa được giải quyết bởi ba commit mới của PR #7. Trọng tâm còn lại:
 
 1. **TV3:** sửa điều kiện kết luận attack lab A2/A4/A5/restore (F1–F3); tiếp nhận/review phần test tamper và test quyền đã chuẩn bị trong bản ghép (F4). PR #5 cần review thật và giải quyết trạng thái blocked.
-2. **TV2:** chốt H2–H4 với TV1/TV3 trong issue #3, đưa API/DB và bản tích hợp lên PR, yêu cầu TV1/TV3 review. Chốt cùng TV3 cách lưu CSV benchmark (F8).
+2. **TV2:** chốt H2–H4 với TV1/TV3 trong issue #3, đưa API/DB và bản tích hợp lên PR, yêu cầu TV1/TV3 review. F8 đã xử lý trong bản local sau audit: bỏ bản sao CSV và đưa bảng/biểu đồ vào Chương 5.
 3. **TV1:** hoàn tất review PR #7 và bằng chứng mutation/coverage tái lập (F6); cùng chủ repo thiết lập required `pytest` trên `main` sau khi workflow được merge (F5). H5 cần TV3 xác nhận trong issue #3.
 4. **Cả nhóm:** hoàn thiện Chương 1–2, 5–6, biểu đồ/slide chung, ảnh demo, nghiệm thu máy sạch và tổng duyệt trước khi gắn tag (F7). Đây là điều kiện hoàn tất đồ án/release, không phải bằng chứng code không chạy hay lý do bắt buộc hoãn mọi PR. Sai lệch lịch sử Sprint 0 (F9) chỉ cần ghi nhận, không viết lại lịch sử.
 
 Đường merge đề xuất: TV3 cập nhật/review PR #5 và merge để đưa CI lên `main`; TV1 cập nhật PR #7 với `main`, chờ CI và review rồi merge; sau đó TV2 cập nhật nhánh tích hợp, mở PR chứa API/DB và các sửa tích hợp, chạy CI trên đúng head commit và review theo chủ phần việc. Chạy lại PostgreSQL/demo/attack lab trên `main` sau merge; chỉ nghiệm thu release khi tài liệu và minh chứng cuối đủ. PR #7 có thể merge trước PR #5 nếu nhóm chấp nhận thiếu CI ở thời điểm đó, nhưng theo kế hoạch nên có check bắt buộc trước merge.
+
+## Trạng thái sau khi sửa trên nhánh tích hợp local
+
+| Mục | Trạng thái mới |
+|---|---|
+| F1–F3 | Đã sửa attack lab: A2 so DB/payload; A4/A5 so `code=integrity_failure`, không lộ field nhạy cảm; restore so byte hàng và payload. 9 test chống pass giả/HTTP lỗi đạt. Chạy PostgreSQL cô lập ngày 16/11 đạt A1–A5; xem [log](evidence/merge_validation_2026-11-16.json). |
+| F4 | Test tamper nằm trong `test_security.py`; test API giữ H2 bằng dependency crypto giả ném `IntegrityFailure`. Code local đã qua 102 test; TV3 vẫn cần review file sở hữu. |
+| F5 | Workflow có trong bản tích hợp, nhưng required pytest trên `main` và CI/review của PR cuối vẫn cần chủ repo xử lý sau khi PR được đưa lên GitHub. |
+| F6 | Đã tái kiểm 48 test TV1, coverage 100% dòng/nhánh và 18/19 mutant bị bắt bằng [script tái lập](../scripts/recheck_tv1_mutations.py). Đây là bằng chứng mới, không thay log TDD gốc của TV1. |
+| F7 | Có bản ghép Chương 1–6 bằng Markdown/Word, Chương 5 có hai biểu đồ; cần chủ phần việc xác nhận, điền tên/MSSV, chụp ảnh từ PR/main cuối, nghiệm thu máy sạch và tổng duyệt. |
+| F8 | Đã bỏ bản sao CSV khỏi Git; sáu hàng số liệu benchmark ngày 15/11, overhead và biểu đồ nằm ở [Chương 5](TV3_BAO_CAO_CHUONG_5.md). |
+| F9 | Giữ nguyên lịch sử Sprint 0; không reset/force-push. |
+
+`main` đã được fetch và merge kiểm tra, trả “Already up to date”; bản sửa PR #7 đã ghép vào local. **Code local chạy demo và test**, nhưng bản GitHub chưa có PR API/DB, PR #5/#7 còn cần review/merge; CI trên đúng head commit và nghiệm thu main cuối chưa có. Không gắn tag hoặc gọi đây là release.

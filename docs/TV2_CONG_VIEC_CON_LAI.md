@@ -1,8 +1,8 @@
 # TV2 — Trạng thái công việc sau tích hợp
 
-Cập nhật 15/11/2026. Nguồn hiện tại: [báo cáo kiểm tra nhánh và nghiệm thu](TV2_MERGE_READINESS.md). Các ghi chú ngày 14/11 về việc còn chờ crypto/TV3 đã được thay thế bằng trạng thái này.
+Cập nhật 16/11/2026. Nguồn hiện tại: [đối chiếu mới](DOI_CHIEU_CAP_NHAT_16_11_2026.md) và [bằng chứng nghiệm thu mới](evidence/merge_validation_2026-11-16.json). Các ghi chú ngày 14/11 về việc còn chờ crypto/TV3 đã được thay thế bằng trạng thái này.
 
-Đối chiếu toàn bộ kế hoạch mới nhất: [bảng cả nhóm và phương án xử lý](DOI_CHIEU_KE_HOACH_CA_NHOM.md). Còn test gây tamper trong test_api cần bàn giao TV3 hoặc đổi thành dependency giả; phần sửa test_security local cần TV3 tiếp nhận. Attack lab cần siết tiêu chí tự kiểm trước khi đóng nghiệm thu cuối.
+Đối chiếu toàn bộ kế hoạch: [bảng cả nhóm](DOI_CHIEU_KE_HOACH_CA_NHOM.md). Test tamper đã đặt trong test_security; test API dùng dependency crypto giả ném IntegrityFailure. Attack lab đã siết điều kiện A2/A4/A5/restore và có test chống pass giả; TV3 còn cần review phần file sở hữu.
 
 ## Phần kỹ thuật đã chuẩn bị
 
@@ -10,7 +10,7 @@ Cập nhật 15/11/2026. Nguồn hiện tại: [báo cáo kiểm tra nhánh và 
 - Lấy AES-GCM thật từ main; tích hợp source TV3 trên nhánh local `integration/tv2-merge-prep`.
 - Giải quyết hai xung đột bằng dependencies/fixture của TV3. Bỏ WAIT_API; chuyển test quyền từng route sang test_security; bỏ test nonce trùng TV3.
 - Bổ sung `test_sensitive_columns_store_only_crypto_output` cho POST/PUT theo Definition of Done TV2. Giữ test lỗi toàn danh sách và xóa hồ sơ hỏng để kiểm H2.
-- Pytest: 91 passed, không xfail/skip; PostgreSQL: 19/19 điều kiện đạt; attack lab và benchmark chạy thành công.
+- Pytest: 102 passed, không xfail/skip; PostgreSQL: 19/19 điều kiện đạt; attack lab mới đạt trên DB thật. Benchmark ngày 15/11 có bảng/biểu đồ trong Chương 5.
 - Cập nhật Chương 3–4, Word/PPTX, kịch bản demo; có [hợp đồng TV2](TV2_HOP_DONG_ISSUE_3.md), [PR draft](TV2_PR_DRAFT.md), [ghi chú review](TV2_REVIEW_GHI_CHU.md).
 
 ## Đối chiếu 23 bước
@@ -37,7 +37,7 @@ Cập nhật 15/11/2026. Nguồn hiện tại: [báo cáo kiểm tra nhánh và 
 2. Review PR #5 và giải quyết trạng thái GitHub blocked; chưa có review tại lần kiểm tra.
 3. Làm theo thứ tự trong TV2_MERGE_READINESS; reviewer TV3 xem thay đổi test_security.
 4. CI chạy trên đúng commit sẽ merge, rồi nghiệm thu lại main. Kết quả local không thay CI/review.
-5. TV3 hoàn thiện Chương 5, biểu đồ/diễn giải benchmark, kiểm máy sạch và release. CSV trong evidence là số đo tham khảo.
-6. Điền tên/MSSV, ghép báo cáo/slide với TV1; luyện demo và tổng duyệt.
+5. TV3 rà soát Chương 5, biểu đồ/diễn giải đã chuẩn bị; cùng nhóm kiểm máy sạch và release. CSV benchmark không còn trong Git.
+6. Điền tên/MSSV, xác nhận báo cáo/slide ghép với TV1; luyện demo và tổng duyệt.
 
 Không cần dựng lại lịch sử Sprint 0 hoặc viết lại crypto. Không reset dữ liệu hiện có để hoàn tất các việc trên; chỉ reset SV9001/SV9002 khi đó là dữ liệu demo được phép thay.

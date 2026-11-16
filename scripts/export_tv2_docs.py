@@ -40,7 +40,7 @@ def export_report():
             doc.add_heading(heading[2], level=level)
         else:
             doc.add_paragraph(line)
-    section.footer.paragraphs[0].text = "Database Encryption • TV2 • Bản tích hợp 15/11/2026"
+    section.footer.paragraphs[0].text = "Database Encryption • TV2 • Bản tích hợp 16/11/2026"
     path = DOCS / "TV2_BAO_CAO_CHUONG_3_4.docx"
     doc.save(path)
     assert len(Document(path).paragraphs) > 50
@@ -91,7 +91,7 @@ def base(prs, number, title, subtitle):
     text_box(slide, 0.55, 0.95, 12.2, 0.75, title, 34, NAVY, True)
     text_box(slide, 0.58, 1.76, 12, 0.65, subtitle, 19, GRAY)
     text_box(slide, 0.55, 6.85, 11.5, 0.34,
-             "Tích hợp local 15/11/2026 • AES-GCM + API + PostgreSQL • Chờ review/merge", 12, AMBER)
+             "Tích hợp local 16/11/2026 • AES-GCM + API + PostgreSQL • Chờ review/merge", 12, AMBER)
     text_box(slide, 12.1, 6.85, 0.65, 0.34, f"0{number}", 13, TEAL, True)
     return slide
 
@@ -154,15 +154,15 @@ def export_slides():
     block(slide, 6.8, 2.7, 5.9, 2.9)
     text_box(slide, 0.85, 2.95, 5.3, 0.5, "ĐÃ KIỂM TRA", 23, TEAL, True)
     text_box(slide, 0.85, 3.65, 5.3, 1.75,
-             "Pytest: 91 passed, 0 xfail\nPostgreSQL: 19/19 đạt\nAttack lab + restore: đạt", 22)
+             "Pytest: 102 passed, 0 xfail\nPostgreSQL: 19/19 đạt\nAttack lab + restore: đạt", 22)
     text_box(slide, 7.05, 2.95, 5.4, 0.5, "BÀN GIAO", 23, AMBER, True)
     text_box(slide, 7.05, 3.65, 5.4, 1.75,
              "Chốt H2–H5 ở issue #3\nReview + CI + merge PR\nGhép báo cáo, luyện demo", 22)
     text_box(slide, 0.7, 5.9, 11.8, 0.6,
              "Bằng chứng: docs/tv2_verification.json  •  Không suy diễn test API thành an toàn mật mã", 18, GRAY)
     slide.notes_slide.notes_text_frame.text = (
-        "20 giây. Kết quả local ngày 15/11/2026: 91 test đạt, không xfail; PostgreSQL 19/19. "
-        "Attack lab A1=401, A2=403, A3=True, A4/A5=409, Restore=200. Chưa merge GitHub. "
+        "20 giây. Kết quả local ngày 16/11/2026: 102 test đạt, không xfail; PostgreSQL 19/19. "
+        "Attack lab A1=401, A2=403 và dữ liệu nguyên, A3=True, A4/A5=409 đúng code và restore. Chưa merge GitHub. "
         "Chuyển TV3: quyền, tamper, tráo hàng, restore. Tổng phần TV2 3 phút gồm demo Swagger/psql.")
 
     for slide in prs.slides:

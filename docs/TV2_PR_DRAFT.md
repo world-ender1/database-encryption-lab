@@ -6,20 +6,19 @@ Main đã có AES-GCM của TV1 nhưng chưa có API/DB. Thay đổi bổ sung F
 
 - TV2: config, database/model, schemas, dependency H1, student service, routes, init_db, Docker/Compose, demo_client và test_api.
 - Test hợp đồng lưu trữ kiểm POST/PUT lưu đúng đầu ra CryptoService; smoke PostgreSQL kiểm thêm tag và key_version.
-- Dependencies và fixture lấy nguyên bản TV3 để giải quyết add/add. Bỏ WAIT_API sau tích hợp; chuyển test quyền từng route sang test_security, bỏ test nonce trùng. Phần này cần TV3 review.
+- Dependencies và fixture lấy nguyên bản TV3 để giải quyết add/add. Bỏ WAIT_API sau tích hợp; test quyền và tamper nằm trong test_security, test API kiểm H2 bằng crypto giả ném IntegrityFailure. TV3 cần review phần tiếp nhận.
 - Cập nhật api_db, Chương 3–4 (Markdown/Word), slide/PPTX, nội dung hợp đồng và bằng chứng.
-- Module crypto/auth của TV1 giữ nguyên theo main đã merge.
+- Đã ghép local bản sửa UTF-8 của TV1 từ PR #7; không đổi hợp đồng H1.
 
 ## Kiểm tra
 
-Ngày 15/11/2026 trên bản ghép local:
+Kết quả cũ ngày 15/11: 91 test Windows/Linux và benchmark gốc. Đợt tái kiểm ngày 16/11 trên bản ghép local mới:
 
-- Windows Python 3.12.1: 91 passed, không xfail/skip.
-- Linux image Python 3.12.16 cài dependencies mới: 91 passed; pip check đạt. Có một DeprecationWarning Starlette/AnyIO ở mỗi môi trường.
+- Windows Python 3.12.1: 102 passed, không xfail/skip. Chưa chạy lại pytest Linux trên commit mới; kết quả 91 test Linux thuộc lần 15/11.
 - Docker build/up --wait: DB/API healthy. Demo SV9001/SV9002 tạo 201, đọc 200.
 - verify_tv2: 19/19 đạt, exit 0 trên PostgreSQL 17.12.
-- Attack lab: A1=401, A2=403, A3=True, A4=409, A5=409, Restore=200.
-- Benchmark: đủ 100/1.000/10.000 bản ghi; CSV/log trong docs/evidence.
+- Attack lab mới: A1=401, A2=403 kèm DB/payload nguyên, A3=True cho ba field, A4/A5=409 đúng code, byte DB và payload được khôi phục.
+- Benchmark ngày 15/11: đủ 100/1.000/10.000 bản ghi; bảng/biểu đồ trong Chương 5, CSV gốc không commit.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
@@ -33,13 +32,13 @@ Lần nghiệm thu dùng cấu hình/cổng/volume mới trong bản sao tạm; 
 
 ## Reviewer và điều kiện merge
 
-Audit kế hoạch bổ sung phát hiện tiêu chí tự kết luận của attack_lab còn thiếu (A2 giữ dữ liệu, A4/A5 kiểm code, restore kiểm nội dung). Cần TV3 sửa/review theo docs/DOI_CHIEU_KE_HOACH_CA_NHOM.md; bàn giao test tamper còn trong test_api, chốt lưu CSV và required pytest trước nghiệm thu cuối. Bản draft này chưa phải xác nhận toàn bộ nhóm đã đạt DoD.
+Các mục code F1–F4 đã được sửa trên bản tích hợp local và có test chống pass giả; F8 đã xử lý bằng cách đưa số liệu/biểu đồ vào Chương 5, bỏ CSV trong Git. TV3 cần review phần file sở hữu; required pytest trên main và CI của đúng PR vẫn cần chủ repo xử lý trước merge. Bản draft này chưa phải xác nhận toàn bộ nhóm đã đạt DoD.
 
 TV1 review mapping H1, auth và mô tả mật mã; TV3 review dependencies/fixture, test_security và H2/H3. Hoàn tất nội dung H2–H5 ở issue #3 theo docs/TV2_HOP_DONG_ISSUE_3.md.
 
-Đề xuất merge PR #5 đã review trước, cập nhật nhánh integration/tv2-merge-prep theo main rồi dùng PR này. Khi đó source TV3 đã nằm trong base và diff tập trung vào API/DB cùng thay đổi test tích hợp. Giữ lịch sử commit, không force-push. Xem docs/TV2_MERGE_READINESS.md.
+Đề xuất review/merge PR #5 để đưa CI lên main, cập nhật/review/merge PR #7, rồi cập nhật nhánh integration/tv2-merge-prep theo main và mở PR này. Khi đó source TV1/TV3 đã nằm trong base, diff tập trung vào API/DB và sửa tích hợp. Giữ lịch sử commit, không force-push. Xem docs/TV2_MERGE_READINESS.md.
 
-Replay cùng ô, lộ khóa/máy ứng dụng và metadata để rõ là giới hạn thiết kế. Chương 5/biểu đồ benchmark, nghiệm thu máy sạch, tên/MSSV, ghép báo cáo và tổng duyệt vẫn là việc bàn giao của nhóm.
+Replay cùng ô, lộ khóa/máy ứng dụng và metadata để rõ là giới hạn thiết kế. Chương 1–2/5–6 và biểu đồ đã có bản ghép local cần chủ phần việc xác nhận; nghiệm thu máy sạch, ảnh demo, tên/MSSV và tổng duyệt vẫn là việc bàn giao của nhóm.
 
 ---
 Bản mô tả local; chưa tạo PR, gán reviewer hoặc đăng approval. Cập nhật kết quả CI và commit thực tế trước merge.
